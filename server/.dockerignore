@@ -1,0 +1,62 @@
+# Python
+
+**pycache**/
+_.py[cod]
+_$py.class
+\*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Database
+
+_.db
+_.sqlite3
+
+# Environment
+
+.env
+.env.local
+
+# IDE
+
+.vscode/
+.idea/
+_.swp
+_.swo
+
+# Testing
+
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Logs
+
+\*.log
+
+# OS
+
+.DS_Store
+Thumbs.db
+
+# Git
+
+.git/
+.gitignore
+
+# Documentation
+
+\*.md
+!README.md
+
+# Alembic
+
+alembic/versions/\*.pyc
+
+# Tests
+
+tests/
