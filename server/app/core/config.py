@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     APP_NAME: str = "FlowTrack API"
     VERSION: str = "1.0.0"
+    MODE : str = "development"  # or "production"
 
     class Config:
         env_file = ".env"

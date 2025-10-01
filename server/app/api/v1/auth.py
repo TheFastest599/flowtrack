@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.core.config import settings
 from app.database import get_db
 from app.schemas.auth import UserCreate, UserLogin, Token
 from app.services.auth_service import AuthService
@@ -8,19 +8,45 @@ from app.services.auth_service import AuthService
 router = APIRouter()
 
 
-@router.post("/register", response_model=dict, status_code=status.HTTP_201_CREATED)
-async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
+@router.post("/register", status_code=status.HTTP_201_CREATED)
+async def register(user_data: UserCreate,response : Response, db: AsyncSession = Depends(get_db)):
     """Register a new user."""
-    return await AuthService.register_user(db, user_data)
+    result = await AuthService.register_user(db, user_data)
+    response.set_cookie(
+        key="refresh_token",
+        value=result["refresh_token"],  # Wait, no—store the token before popping
+        httponly=True,
+        secure=settings.MODE == "production",
+        samesite="strict",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+    )
+    result.pop("refresh_token")
+    return result
 
 
-@router.post("/login", response_model=dict)
-async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
+@router.post("/login")
+async def login(credentials: UserLogin, response : Response, db: AsyncSession = Depends(get_db)):
     """Login user and return JWT tokens."""
-    return await AuthService.authenticate_user(db, credentials.email, credentials.password)
+    result =  await AuthService.authenticate_user(db, credentials.email, credentials.password)
+    response.set_cookie(
+        key="refresh_token",
+        value=result["refresh_token"],  # Wait, no—store the token before popping
+        httponly=True,
+        secure=settings.MODE == "production",
+        samesite="strict",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+    )
+    result.pop("refresh_token")
+    return result
 
 
-@router.post("/refresh", response_model=dict)
-async def refresh_token(refresh_token: str, db: AsyncSession = Depends(get_db)):
+@router.post("/refresh")
+async def refresh_token( request : Request,response : Response, db: AsyncSession = Depends(get_db)):
     """Refresh access token using refresh token."""
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token missing"
+        )
     return await AuthService.refresh_access_token(db, refresh_token)

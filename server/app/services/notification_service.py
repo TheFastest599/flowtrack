@@ -49,6 +49,7 @@ class NotificationService:
         for user_id in disconnected:
             self.disconnect(user_id)
 
+    
     async def listen_to_redis(self, websocket: WebSocket, user_id: str):
         """Listen to Redis Pub/Sub and forward messages to WebSocket client."""
         # Subscribe to all channels
@@ -56,7 +57,8 @@ class NotificationService:
         
         try:
             while True:
-                message = await redis_client.get_message(timeout=1.0)
+                # Use pubsub to get messages from subscribed channels
+                message = await pubsub.get_message(timeout=1.0)
                 
                 if message and message.get('type') == 'message':
                     try:
@@ -76,9 +78,10 @@ class NotificationService:
             print(f"Error in Redis listener for user {user_id}: {e}")
         finally:
             # Cleanup
-            await redis_client.unsubscribe(*self.subscribed_channels)
+            await pubsub.unsubscribe(*self.subscribed_channels)
             self.disconnect(user_id)
-
+    
+    
     async def publish_notification(self, channel: str, message: dict):
         """Publish a notification to a Redis channel."""
         await redis_client.publish(channel, message)
