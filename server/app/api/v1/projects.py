@@ -32,9 +32,10 @@ async def list_projects(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """List all projects with optional filters."""
+    """List projects: Users see only their projects, Admins see all."""
     projects = await ProjectService.get_projects(
         db,
+        current_user=current_user,
         skip=skip,
         limit=limit,
         status=status_filter
@@ -48,12 +49,12 @@ async def get_project(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get project details by ID."""
-    project = await ProjectService.get_project(db, project_id)
+    """Get project details: Users can only access their projects, Admins access all."""
+    project = await ProjectService.get_project(db, project_id, current_user)
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Project not found"
+            detail="Project not found or access denied"
         )
     return project
 
@@ -97,6 +98,11 @@ async def get_project_progress(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get project progress statistics."""
-    progress = await ProjectService.get_project_progress(db, project_id)
+    """Get project progress: Users can only access their projects, Admins access all."""
+    progress = await ProjectService.get_project_progress(db, project_id, current_user)
+    if not progress:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found or access denied"
+        )
     return progress

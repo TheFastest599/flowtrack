@@ -1,0 +1,45 @@
+import { axios } from "./index"; // Import the configured axios
+import { useAuthStore } from "@/stores/authStore";
+
+// Set token in axios headers (run this once or in a wrapper)
+const { token } = useAuthStore.getState();
+if (token) {
+  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+}
+
+export const projectsApi = {
+  // Create project
+  createProject: async (data) => {
+    const response = await axios.post("/projects", data);
+    return response.data;
+  },
+
+  // List projects
+  getProjects: async (params = {}) => {
+    const response = await axios.get("/projects", { params });
+    return response.data;
+  },
+
+  // Get single project
+  getProject: async (projectId) => {
+    const response = await axios.get(`/projects/${projectId}`);
+    return response.data;
+  },
+
+  // Update project
+  updateProject: async (projectId, data) => {
+    const response = await axios.put(`/projects/${projectId}`, data);
+    return response.data;
+  },
+
+  // Delete project
+  deleteProject: async (projectId) => {
+    await axios.delete(`/projects/${projectId}`);
+  },
+
+  // Get project progress
+  getProjectProgress: async (projectId) => {
+    const response = await axios.get(`/projects/${projectId}/progress`);
+    return response.data;
+  },
+};

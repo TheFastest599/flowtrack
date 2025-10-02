@@ -19,8 +19,8 @@ async def create_task(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Create a new task."""
-    task = await TaskService.create_task(db, task_data, current_user.id)
+    """Create a new task (Users can create if they are project members, Admins always)."""
+    task = await TaskService.create_task(db, task_data, current_user)
     return task
 
 
@@ -35,9 +35,10 @@ async def list_tasks(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """List all tasks with optional filters."""
+    """List tasks: Users see only assigned tasks, Admins see all."""
     tasks = await TaskService.get_tasks(
         db,
+        current_user=current_user,
         skip=skip,
         limit=limit,
         project_id=project_id,
@@ -54,12 +55,12 @@ async def get_task(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get task by ID."""
-    task = await TaskService.get_task(db, task_id)
+    """Get task by ID: Users can only access assigned tasks, Admins access all."""
+    task = await TaskService.get_task(db, task_id, current_user)
     if not task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found"
+            detail="Task not found or access denied"
         )
     return task
 
@@ -71,12 +72,12 @@ async def update_task(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Update task."""
-    task = await TaskService.update_task(db, task_id, task_data, current_user.id)
+    """Update task: Only assignee or Admin."""
+    task = await TaskService.update_task(db, task_id, task_data, current_user)
     if not task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found"
+            detail="Task not found or access denied"
         )
     return task
 
@@ -87,12 +88,12 @@ async def delete_task(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Delete task."""
-    success = await TaskService.delete_task(db, task_id, current_user.id)
+    """Delete task: Only assignee or Admin."""
+    success = await TaskService.delete_task(db, task_id, current_user)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found"
+            detail="Task not found or access denied"
         )
     return None
 
@@ -104,11 +105,11 @@ async def move_task(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Move task to a new status (Kanban drag-and-drop)."""
-    task = await TaskService.move_task(db, task_id, new_status, current_user.id)
+    """Move task to a new status: Only assignee or Admin."""
+    task = await TaskService.move_task(db, task_id, new_status, current_user)
     if not task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found"
+            detail="Task not found or access denied"
         )
     return task

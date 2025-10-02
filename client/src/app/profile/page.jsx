@@ -45,7 +45,7 @@ function Page() {
   }
 
   return (
-    <div className="min-h-screen max-w-xl mx-auto p-4">
+    <div className="min-h-screen max-w-xl mx-auto p-4 mt-52">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

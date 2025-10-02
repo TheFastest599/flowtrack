@@ -28,13 +28,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, LogOut } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton"; // Add this import
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/authStore";
+
+const navLinks = [
+  { name: "Home", href: "/" },
+  { name: "Dashboard", href: "/dashboard" },
+  { name: "Projects", href: "/projects" },
+  { name: "Tasks", href: "/tasks" },
+  { name: "Reports", href: "/reports" },
+  { name: "About", href: "/about" },
+];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { user, loggedIn, logout, hydrated } = useAuthStore();
   const router = useRouter();
+
+  const isAdmin = user?.role === "admin";
 
   const handleLogout = () => {
     logout();
@@ -54,26 +66,13 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-6">
           <NavigationMenu>
             <NavigationMenuList className="gap-6">
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild>
-                  <Link href="/">Home</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild>
-                  <Link href="/about">About</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild>
-                  <Link href="/projects">Projects</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild>
-                  <Link href="/contact">Contact</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
+              {navLinks.map((link) => (
+                <NavigationMenuItem key={link.name}>
+                  <NavigationMenuLink asChild>
+                    <Link href={link.href}>{link.name}</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              ))}
               {/* Auth Buttons */}
               {!hydrated ? (
                 <NavigationMenuItem>
@@ -93,19 +92,22 @@ export default function Navbar() {
               ) : (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="relative h-8 w-8 rounded-full"
-                    >
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.avatar} alt={user?.name} />
-                        <AvatarFallback>
-                          {user?.name
-                            ? user.name.slice(0, 2).toUpperCase()
-                            : "U"}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
+                    <div>
+                      <Button
+                        variant="ghost"
+                        className="relative h-8 w-8 rounded-full"
+                      >
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={user?.avatar} alt={user?.name} />
+                          <AvatarFallback>
+                            {user?.name
+                              ? user.name.slice(0, 2).toUpperCase()
+                              : "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Button>
+                      {isAdmin && <Badge className="mx-2">admin</Badge>}
+                    </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
@@ -151,18 +153,15 @@ export default function Navbar() {
                 <SheetTitle className="text-xl font-semibold">
                   FlowTrack
                 </SheetTitle>
-                <Link href="/" onClick={() => setOpen(false)}>
-                  Home
-                </Link>
-                <Link href="/about" onClick={() => setOpen(false)}>
-                  About
-                </Link>
-                <Link href="/projects" onClick={() => setOpen(false)}>
-                  Projects
-                </Link>
-                <Link href="/contact" onClick={() => setOpen(false)}>
-                  Contact
-                </Link>
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
                 {/* Auth Buttons */}
                 {!hydrated ? (
                   <div className="flex gap-2">
@@ -181,19 +180,22 @@ export default function Navbar() {
                 ) : (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="relative h-8 w-8 rounded-full"
-                      >
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={user?.avatar} alt={user?.name} />
-                          <AvatarFallback>
-                            {user?.name
-                              ? user.name.slice(0, 2).toUpperCase()
-                              : "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                      </Button>
+                      <div>
+                        <Button
+                          variant="ghost"
+                          className="relative h-8 w-8 rounded-full"
+                        >
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user?.avatar} alt={user?.name} />
+                            <AvatarFallback>
+                              {user?.name
+                                ? user.name.slice(0, 2).toUpperCase()
+                                : "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                        </Button>
+                        {isAdmin && <Badge className="mx-2">admin</Badge>}
+                      </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       className="w-56"

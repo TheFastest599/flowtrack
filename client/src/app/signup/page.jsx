@@ -55,7 +55,7 @@ export default function SignupPage() {
         password: formData.password,
       });
       // Redirect on success
-      router.push("/login");
+      router.push("/");
     } catch (err) {
       // Error is handled in the store
     }
