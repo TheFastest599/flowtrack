@@ -20,10 +20,10 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def verify_token(token: str, credentials_exception):
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
+        if not payload or not payload.get('email') or not  payload.get('role') or not payload.get('id'):
             raise credentials_exception
-        return username
+ 
+        return payload
     except JWTError:
         raise credentials_exception
 
@@ -76,8 +76,8 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    username = verify_token(credentials.credentials, credentials_exception)
-    user = db.query(User).filter(User.email == username).first()
+    user_from_token = verify_token(credentials.credentials, credentials_exception)
+    user = user_from_token
     if user is None:
         raise credentials_exception
     return user

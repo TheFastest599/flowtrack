@@ -6,11 +6,11 @@ import { useAuthStore } from "@/stores/authStore";
 import { Loader2 } from "lucide-react";
 
 export default function ProtectedRoute({ children, requireAdmin = false }) {
-  const { user, isLoading } = useAuthStore();
+  const { user, isLoading, hydrated } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading) {
+    if (hydrated && !isLoading) {
       if (!user) {
         // Not logged in, redirect to login
         router.push("/login");
@@ -19,10 +19,10 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
         router.push("/"); // Or "/dashboard" if you have one
       }
     }
-  }, [user, isLoading, requireAdmin, router]);
+  }, [user, isLoading, hydrated, requireAdmin, router]);
 
-  if (isLoading) {
-    // Show loading spinner while checking auth
+  if (!hydrated || isLoading) {
+    // Wait for store to hydrate and check auth
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />

@@ -28,11 +28,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, LogOut } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton"; // Add this import
 import { useAuthStore } from "@/stores/authStore";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const { user, loggedIn, logout } = useAuthStore();
+  const { user, loggedIn, logout, hydrated } = useAuthStore();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -74,19 +75,22 @@ export default function Navbar() {
                 </NavigationMenuLink>
               </NavigationMenuItem>
               {/* Auth Buttons */}
-              {!loggedIn && (
+              {!hydrated ? (
+                <NavigationMenuItem>
+                  <Skeleton className="h-8 w-8" />
+                </NavigationMenuItem>
+              ) : !loggedIn ? (
                 <>
                   <NavigationMenuItem className="flex gap-2">
                     <Button variant="outline" asChild>
-                      <Link href="/login">Login</Link>
+                      <Link href="/login">Sign In</Link>
                     </Button>
                     <Button asChild>
                       <Link href="/signup">Sign Up</Link>
                     </Button>
                   </NavigationMenuItem>
                 </>
-              )}
-              {loggedIn && (
+              ) : (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -160,17 +164,21 @@ export default function Navbar() {
                   Contact
                 </Link>
                 {/* Auth Buttons */}
-                {!loggedIn && (
+                {!hydrated ? (
+                  <div className="flex gap-2">
+                    <Skeleton className="h-10 w-16" />
+                    <Skeleton className="h-10 w-20" />
+                  </div>
+                ) : !loggedIn ? (
                   <div className="flex gap-2">
                     <Button variant="outline" asChild>
-                      <Link href="/login">Login</Link>
+                      <Link href="/login">Sign In</Link>
                     </Button>
                     <Button asChild>
                       <Link href="/signup">Sign Up</Link>
                     </Button>
                   </div>
-                )}
-                {loggedIn && (
+                ) : (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button

@@ -28,24 +28,17 @@ async def get_current_user(
         )
     
     # Get user email from token
-    email: Optional[str] = payload.get("sub")
-    if email is None:
+    email: Optional[str] = payload.get("email")
+    role: Optional[str] = payload.get("role")
+    id: Optional[str] = payload.get("id")
+    if email is None or role is None or id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Query user from database
-    result = await db.execute(select(User).where(User.email == email))
-    user = result.scalar_one_or_none()
-    
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    user = payload
     
     return user
 

@@ -41,10 +41,10 @@ class AuthService:
         
         # Generate tokens
         access_token = create_access_token(
-            data={"id" : user.id ,"email": user.email, "role": user.role}
+            data={"id" :  str(user.id) ,"email": user.email, "role": user.role}
         )
         refresh_token = create_refresh_token(
-            data={"id" : user.id ,"email": user.email}
+            data={"id" :  str(user.id) ,"email": user.email, "role": user.role}
         )
         
         return {
@@ -74,10 +74,10 @@ class AuthService:
         
         # Generate tokens
         access_token = create_access_token(
-            data={"id" : user.id ,"email": user.email, "role": user.role}
+            data={"id" :  str(user.id) ,"email": user.email, "role": user.role}
         )
         refresh_token = create_refresh_token(
-            data={"id" : user.id ,"email": user.email}
+            data={"id" :  str(user.id) ,"email": user.email, "role": user.role}
         )
         
         return {
@@ -124,7 +124,7 @@ class AuthService:
         
         # Generate new access token
         access_token = create_access_token(
-            data={"id" : user.id ,"email": user.email, "role": user.role}
+            data={"id" :  str(user.id) ,"email": user.email, "role": user.role}
         )
         
         return {

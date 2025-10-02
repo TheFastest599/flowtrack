@@ -6,10 +6,11 @@ import { useAuthStore } from "@/stores/authStore";
 
 const useRefreshToken = () => {
   // Changed to const assignment
-  const { refreshToken } = useAuthStore();
+  const { refreshToken, hydrated } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
+    if (!hydrated) return;
     const refresh = async () => {
       try {
         const res = await refreshToken();
@@ -31,7 +32,7 @@ const useRefreshToken = () => {
 
     // Cleanup interval on unmount
     return () => clearInterval(interval);
-  }, []); // Empty dependencies as discussed
+  }, [hydrated]); // Empty dependencies as discussed
 
   return null;
 };

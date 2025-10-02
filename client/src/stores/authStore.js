@@ -12,6 +12,7 @@ export const useAuthStore = create(
       loggedIn: false,
       isLoading: false,
       error: null,
+      hydrated: false,
       setUser: (user) => set({ user }),
       setToken: (token) => set({ token }),
       setLoading: (isLoading) => set({ isLoading }),
@@ -71,6 +72,8 @@ export const useAuthStore = create(
         }
       },
       refreshToken: async () => {
+        const { loggedIn } = get();
+        if (!loggedIn) return true; // No need to refresh if not logged in
         set({ isLoading: true, error: null });
         try {
           const response = await auth.refreshToken();
@@ -122,7 +125,11 @@ export const useAuthStore = create(
         token: state.token,
         user: state.user,
         loggedIn: state.loggedIn,
-      }), // Only persist token and user
+      }),
+      onRehydrateStorage: () => (state) => {
+        // Set hydrated to true after rehydration
+        state.hydrated = true;
+      },
     }
   )
 );
