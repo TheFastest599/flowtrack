@@ -50,3 +50,11 @@ async def refresh_token( request : Request,response : Response, db: AsyncSession
             detail="Refresh token missing"
         )
     return await AuthService.refresh_access_token(db, refresh_token)
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout():
+    """Logout user by clearing the refresh token cookie."""
+    response = Response(status_code=status.HTTP_204_NO_CONTENT)
+    response.delete_cookie(key="refresh_token")
+    return response

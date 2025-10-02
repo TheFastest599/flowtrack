@@ -1,6 +1,9 @@
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/QueryProvider";
+import RefreshTokenWrapper from "@/components/RefreshTokenWrapper";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -17,7 +20,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${poppins.variable}  antialiased`}>
-        <QueryProvider>{children}</QueryProvider>
+        <RefreshTokenWrapper />
+        <Navbar />
+        <QueryProvider>
+          <main className=" mx-4 sm:mx-6 md:mx-auto">{children}</main>
+        </QueryProvider>
+        <Footer />
       </body>
     </html>
   );

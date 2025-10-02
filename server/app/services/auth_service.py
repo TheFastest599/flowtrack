@@ -52,7 +52,7 @@ class AuthService:
             "refresh_token": refresh_token,
             "token_type": "bearer",
             "user": {
-                "id": str(user.id),
+                # "id": str(user.id),
                 "name": user.name,
                 "email": user.email,
                 "role": user.role
@@ -85,7 +85,7 @@ class AuthService:
             "refresh_token": refresh_token,
             "token_type": "bearer",
             "user": {
-                "id": str(user.id),
+                # "id": str(user.id),
                 "name": user.name,
                 "email": user.email,
                 "role": user.role
