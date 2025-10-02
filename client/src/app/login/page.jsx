@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,14 @@ import { useAuthStore } from "@/stores/authStore";
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoading, error } = useAuthStore();
+  const { loggedIn, login, isLoading, error } = useAuthStore();
   const router = useRouter();
+
+  useEffect(() => {
+    if (loggedIn) {
+      router.push("/");
+    }
+  }, [loggedIn, router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -32,6 +38,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       const res = await login(formData.email, formData.password);
+      router.push("/");
       // console.log(res);
     } catch (err) {
       // Error is handled in the store

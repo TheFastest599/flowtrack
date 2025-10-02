@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -27,8 +27,14 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [localError, setLocalError] = useState("");
-  const { register, isLoading, error } = useAuthStore();
+  const { loggedIn, register, isLoading, error } = useAuthStore();
   const router = useRouter();
+
+  useEffect(() => {
+    if (loggedIn) {
+      router.push("/");
+    }
+  }, [loggedIn, router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

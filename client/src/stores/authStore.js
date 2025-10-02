@@ -2,6 +2,7 @@ import customStorage from "./customStorage";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import auth from "@/lib/api/auth";
+import { toast } from "sonner";
 
 export const useAuthStore = create(
   persist(
@@ -27,6 +28,7 @@ export const useAuthStore = create(
             isLoading: false,
             error: null,
           });
+          toast("Logged in successfully", { type: "success" });
           return response;
         } catch (error) {
           // Catch the response if available (e.g., from Axios error)
@@ -54,6 +56,7 @@ export const useAuthStore = create(
             isLoading: false,
             error: null,
           });
+          toast("Registered successfully", { type: "success" });
           return response;
         } catch (error) {
           const errorMessage =
@@ -93,6 +96,7 @@ export const useAuthStore = create(
             error: null,
             isLoading: false,
           });
+          toast("Session expired, please log in again", { type: "warning" });
           return false;
         }
       },
@@ -100,13 +104,14 @@ export const useAuthStore = create(
         set({ loggedIn: false, user: null, token: null, error: null });
         try {
           await auth.logout();
+          toast("Logged out successfully", { type: "success" });
         } catch (error) {
           const errorMessage =
             error.response?.data?.detail ||
             error.response?.data?.message ||
             error.message ||
             "Login failed";
-          console.error("Logout failed:", errorMessage);
+          toast(errorMessage, { type: "error" });
         }
       },
     }),

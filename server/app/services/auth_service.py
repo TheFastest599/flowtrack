@@ -41,10 +41,10 @@ class AuthService:
         
         # Generate tokens
         access_token = create_access_token(
-            data={"sub": user.email, "role": user.role}
+            data={"id" : user.id ,"email": user.email, "role": user.role}
         )
         refresh_token = create_refresh_token(
-            data={"sub": user.email}
+            data={"id" : user.id ,"email": user.email}
         )
         
         return {
@@ -74,10 +74,10 @@ class AuthService:
         
         # Generate tokens
         access_token = create_access_token(
-            data={"sub": user.email, "role": user.role}
+            data={"id" : user.id ,"email": user.email, "role": user.role}
         )
         refresh_token = create_refresh_token(
-            data={"sub": user.email}
+            data={"id" : user.id ,"email": user.email}
         )
         
         return {
@@ -100,7 +100,7 @@ class AuthService:
         
         try:
             payload = decode_token(refresh_token)
-            email: str = payload.get("sub")
+            email: str = payload.get("email")
             if email is None:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -124,7 +124,7 @@ class AuthService:
         
         # Generate new access token
         access_token = create_access_token(
-            data={"sub": user.email, "role": user.role}
+            data={"id" : user.id ,"email": user.email, "role": user.role}
         )
         
         return {

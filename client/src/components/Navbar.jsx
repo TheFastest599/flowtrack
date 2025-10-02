@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,9 +18,28 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { User, LogOut } from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const { user, loggedIn, logout } = useAuthStore();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+    // Optionally redirect or handle post-logout
+  };
 
   return (
     <nav className="w-full border-b bg-white shadow-sm">
@@ -53,18 +73,64 @@ export default function Navbar() {
                   <Link href="/contact">Contact</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
+              {/* Auth Buttons */}
+              {!loggedIn && (
+                <>
+                  <NavigationMenuItem className="flex gap-2">
+                    <Button variant="outline" asChild>
+                      <Link href="/login">Login</Link>
+                    </Button>
+                    <Button asChild>
+                      <Link href="/signup">Sign Up</Link>
+                    </Button>
+                  </NavigationMenuItem>
+                </>
+              )}
+              {loggedIn && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="relative h-8 w-8 rounded-full"
+                    >
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.avatar} alt={user?.name} />
+                        <AvatarFallback>
+                          {user?.name
+                            ? user.name.slice(0, 2).toUpperCase()
+                            : "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          {user?.name}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {user?.email}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </NavigationMenuList>
           </NavigationMenu>
-
-          {/* Auth Buttons */}
-          <div className="flex gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/login">Login</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/signup">Sign Up</Link>
-            </Button>
-          </div>
         </div>
 
         {/* Mobile Navigation */}
@@ -93,18 +159,69 @@ export default function Navbar() {
                 <Link href="/contact" onClick={() => setOpen(false)}>
                   Contact
                 </Link>
-                <div className="mt-4 flex flex-col gap-2">
-                  <Button variant="outline" asChild>
-                    <Link href="/login" onClick={() => setOpen(false)}>
-                      Login
-                    </Link>
-                  </Button>
-                  <Button asChild>
-                    <Link href="/signup" onClick={() => setOpen(false)}>
-                      Sign Up
-                    </Link>
-                  </Button>
-                </div>
+                {/* Auth Buttons */}
+                {!loggedIn && (
+                  <div className="flex gap-2">
+                    <Button variant="outline" asChild>
+                      <Link href="/login">Login</Link>
+                    </Button>
+                    <Button asChild>
+                      <Link href="/signup">Sign Up</Link>
+                    </Button>
+                  </div>
+                )}
+                {loggedIn && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="relative h-8 w-8 rounded-full"
+                      >
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={user?.avatar} alt={user?.name} />
+                          <AvatarFallback>
+                            {user?.name
+                              ? user.name.slice(0, 2).toUpperCase()
+                              : "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      className="w-56"
+                      align="end"
+                      forceMount
+                    >
+                      <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">
+                            {user?.name}
+                          </p>
+                          <p className="text-xs leading-none text-muted-foreground">
+                            {user?.email}
+                          </p>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile" onClick={() => setOpen(false)}>
+                          <User className="mr-2 h-4 w-4" />
+                          <span>Profile</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => {
+                          handleLogout();
+                          setOpen(false);
+                        }}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Log out</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </nav>
             </SheetContent>
           </Sheet>

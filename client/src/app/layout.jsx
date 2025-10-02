@@ -4,6 +4,7 @@ import { QueryProvider } from "@/components/QueryProvider";
 import RefreshTokenWrapper from "@/components/RefreshTokenWrapper";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Toaster } from "@/components/ui/sonner";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -23,8 +24,11 @@ export default function RootLayout({ children }) {
         <RefreshTokenWrapper />
         <Navbar />
         <QueryProvider>
-          <main className=" mx-4 sm:mx-6 md:mx-auto">{children}</main>
+          <main className="max-w-7xl my-4 mx-4 sm:mx-6 md:mx-auto">
+            {children}
+          </main>
         </QueryProvider>
+        <Toaster position="top-right" richColors />
         <Footer />
       </body>
     </html>

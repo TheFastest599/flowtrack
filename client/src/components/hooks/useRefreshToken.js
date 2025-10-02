@@ -12,7 +12,11 @@ const useRefreshToken = () => {
   useEffect(() => {
     const refresh = async () => {
       try {
-        await refreshToken();
+        const res = await refreshToken();
+        if (!res) {
+          console.log("Refresh token failed, redirecting to login");
+          router.push("/login");
+        }
       } catch (error) {
         // On failure, redirect to login (e.g., invalid or expired refresh token)
         console.log("Refresh token failed, redirecting to login");
