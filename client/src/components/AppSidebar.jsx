@@ -69,7 +69,7 @@ const menuItems = [
       },
       {
         title: "Reports",
-        href: "/dashboard/analytics/reports",
+        href: "/reports",
       },
       {
         title: "Performance",

@@ -103,12 +103,12 @@ async def delete_task(
 @router.patch("/{task_id}/move", response_model=TaskResponse)
 async def move_task(
     task_id: UUID,
-    new_status: str,
+    move_data: TaskMoveRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Move task to a new status: Only assignee or Admin."""
-    task = await TaskService.move_task(db, task_id, new_status, current_user)
+    task = await TaskService.move_task(db, task_id, move_data.new_status, current_user)
     if not task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

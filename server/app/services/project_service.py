@@ -90,12 +90,24 @@ class ProjectService:
         )
         completed = completed_tasks.scalar() or 0
         
+        in_progress_tasks = await db.execute(
+            select(func.count(Task.id)).where(Task.project_id == project_id).where(Task.status == "in_progress")
+        )
+        in_progress = in_progress_tasks.scalar() or 0
+        
+        todo_tasks = await db.execute(
+            select(func.count(Task.id)).where(Task.project_id == project_id).where(Task.status == "todo")
+        )
+        todo = todo_tasks.scalar() or 0
+        
         progress_percentage = (completed / total * 100) if total > 0 else 0
         
         return {
             "total_tasks": total,
             "completed_tasks": completed,
-            "progress": round(progress_percentage, 2)
+            "in_progress_tasks": in_progress,
+            "todo_tasks": todo,
+            "progress_percentage": round(progress_percentage, 2)
         }
 
     @staticmethod

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, case
 from uuid import UUID
 from typing import List
 
@@ -23,7 +23,7 @@ async def get_project_progress(
 ):
     """Get project progress report."""
     # Check if project exists
-    project = await ProjectService.get_project(db, project_id)
+    project = await ProjectService.get_project(db, project_id, current_user)
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -31,7 +31,7 @@ async def get_project_progress(
         )
     
     # Get progress data
-    progress = await ProjectService.get_project_progress(db, project_id)
+    progress = await ProjectService.get_project_progress(db, project_id, current_user)
     
     return {
         "project_id": project_id,
@@ -53,9 +53,9 @@ async def get_team_performance(
             User.name,
             User.email,
             func.count(Task.id).label("total_tasks"),
-            func.sum(func.case((Task.status == "done", 1), else_=0)).label("completed_tasks"),
-            func.sum(func.case((Task.status == "in_progress", 1), else_=0)).label("in_progress_tasks"),
-            func.sum(func.case((Task.status == "todo", 1), else_=0)).label("todo_tasks")
+            func.sum(case((Task.status == "done", 1), else_=0)).label("completed_tasks"),
+            func.sum(case((Task.status == "in_progress", 1), else_=0)).label("in_progress_tasks"),
+            func.sum(case((Task.status == "todo", 1), else_=0)).label("todo_tasks")
         )
         .outerjoin(Task, User.id == Task.assigned_to)
         .group_by(User.id)
@@ -94,9 +94,9 @@ async def get_workload_distribution(
             User.id,
             User.name,
             func.count(Task.id).label("assigned_tasks"),
-            func.sum(func.case((Task.priority == "high", 1), else_=0)).label("high_priority"),
-            func.sum(func.case((Task.priority == "medium", 1), else_=0)).label("medium_priority"),
-            func.sum(func.case((Task.priority == "low", 1), else_=0)).label("low_priority")
+            func.sum(case((Task.priority == "high", 1), else_=0)).label("high_priority"),
+            func.sum(case((Task.priority == "medium", 1), else_=0)).label("medium_priority"),
+            func.sum(case((Task.priority == "low", 1), else_=0)).label("low_priority")
         )
         .outerjoin(Task, User.id == Task.assigned_to)
         .group_by(User.id)

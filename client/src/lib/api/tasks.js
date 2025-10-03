@@ -7,5 +7,5 @@ export const tasksApi = {
   updateTask: async (id, data) => (await axios.put(`/tasks/${id}`, data)).data,
   deleteTask: async (id) => axios.delete(`/tasks/${id}`),
   moveTask: async (id, status) =>
-    (await axios.patch(`/tasks/${id}/move`, { status })).data,
+    (await axios.patch(`/tasks/${id}/move`, { new_status: status })).data,
 };
