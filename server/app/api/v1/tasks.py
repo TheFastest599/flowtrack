@@ -28,23 +28,25 @@ async def create_task(
 async def list_tasks(
     skip: int = 0,
     limit: int = 100,
-    project_id: Optional[UUID] = None,
+    project_id: Optional[str] = None,
     status: Optional[str] = None,
     priority: Optional[str] = None,
-    assigned_to: Optional[UUID] = None,
+    assigned_to: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """List tasks: Users see only assigned tasks, Admins see all."""
+    project_uuid = UUID(project_id) if project_id else None
+    assigned_uuid = UUID(assigned_to) if assigned_to else None
     tasks = await TaskService.get_tasks(
         db,
         current_user=current_user,
         skip=skip,
         limit=limit,
-        project_id=project_id,
+        project_id=project_uuid,
         status=status,
         priority=priority,
-        assigned_to=assigned_to
+        assigned_to=assigned_uuid
     )
     return tasks
 

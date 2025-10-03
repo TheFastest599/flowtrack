@@ -18,18 +18,21 @@ class ProjectService:
         current_user: User,
         skip: int = 0,
         limit: int = 100,
-        status: Optional[str] = None
+        status: Optional[str] = None,
+        query: Optional[str] = None
     ) -> List[ProjectResponse]:
-        query = select(Project).options(joinedload(Project.creator))
+        query_stmt = select(Project).options(joinedload(Project.creator))
         if status:
-            query = query.where(Project.status == status)
+            query_stmt = query_stmt.where(Project.status == status)
+        if query:
+            query_stmt = query_stmt.where(Project.name.ilike(f"%{query}%"))
         
         # Filter for non-admin users: only projects where user is a member
         if current_user['role'] != "admin":
-            query = query.where(Project.members.any(User.id == current_user['id']))  # Assuming many-to-many relationship
+            query_stmt = query_stmt.where(Project.members.any(User.id == current_user['id']))  # Assuming many-to-many relationship
         
-        query = query.offset(skip).limit(limit)
-        result = await db.execute(query)
+        query_stmt = query_stmt.offset(skip).limit(limit)
+        result = await db.execute(query_stmt)
         projects = result.unique().scalars().all()
         return [
             ProjectResponse(
@@ -208,7 +211,7 @@ class ProjectService:
         return True
 
     @staticmethod
-    async def get_project_members(db: AsyncSession, project_id: UUID, current_user: dict) -> List[dict]:
+    async def get_project_members(db: AsyncSession, project_id: UUID, current_user: dict, search: Optional[str] = None) -> List[dict]:
         # Allow if admin or member of the project
         if current_user['role'] != "admin":
             member_query = select(Project).where(Project.id == project_id).where(Project.members.any(User.id == current_user['id']))
@@ -221,5 +224,11 @@ class ProjectService:
         if not project:
             return []
         
+        # Filter members by search term if provided
+        members = project.members
+        if search:
+            search_lower = search.lower()
+            members = [u for u in members if search_lower in u.name.lower() or search_lower in u.email.lower()]
+        
         # Return list of user dicts
-        return [{"id": str(u.id), "name": u.name, "email": u.email} for u in project.members]
+        return [{"id": str(u.id), "name": u.name, "email": u.email} for u in members]

@@ -62,6 +62,13 @@ class TaskService:
             if not project_result.scalar_one_or_none():
                 raise HTTPException(status_code=403, detail="You are not a member of this project")
         
+        # Check if assigned user is a member of the project
+        if task_data.assigned_to:
+            assigned_check = select(Project).where(Project.id == task_data.project_id).where(Project.members.any(User.id == task_data.assigned_to))
+            assigned_result = await db.execute(assigned_check)
+            if not assigned_result.scalar_one_or_none():
+                raise HTTPException(status_code=400, detail="Assigned user is not a member of the project")
+        
         task = Task(
             title=task_data.title,
             description=task_data.description,
@@ -79,6 +86,9 @@ class TaskService:
 
     @staticmethod
     async def update_task(db: AsyncSession, task_id: UUID, task_data: TaskUpdate, current_user: User) -> Optional[TaskResponse]:
+        from app.models.project import Project
+        from fastapi import HTTPException
+        
         query = select(Task).where(Task.id == task_id)
         if current_user['role'] != "admin":
             query = query.where(Task.assigned_to == current_user.id)
@@ -87,6 +97,17 @@ class TaskService:
         task = result.scalar_one_or_none()
         if not task:
             return None
+        
+        # Check if trying to reassign
+        if task_data.assigned_to is not None and task_data.assigned_to != task.assigned_to:
+            if current_user['role'] != "admin":
+                raise HTTPException(status_code=403, detail="Only admins can reassign tasks")
+            # Check if new assignee is member
+            if task_data.assigned_to:
+                assigned_check = select(Project).where(Project.id == task.project_id).where(Project.members.any(User.id == task_data.assigned_to))
+                assigned_result = await db.execute(assigned_check)
+                if not assigned_result.scalar_one_or_none():
+                    raise HTTPException(status_code=400, detail="Assigned user is not a member of the project")
         
         for key, value in task_data.dict(exclude_unset=True).items():
             setattr(task, key, value)

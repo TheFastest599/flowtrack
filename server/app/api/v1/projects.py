@@ -29,6 +29,7 @@ async def list_projects(
     skip: int = 0,
     limit: int = 100,
     status_filter: Optional[str] = None,
+    query: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -38,7 +39,8 @@ async def list_projects(
         current_user=current_user,
         skip=skip,
         limit=limit,
-        status=status_filter
+        status=status_filter,
+        query=query
     )
     return projects
 
@@ -145,9 +147,10 @@ async def remove_member_from_project(
 @router.get("/{project_id}/members")
 async def get_project_members(
     project_id: UUID,
+    search: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get members of a project (Admin or project member)."""
-    members = await ProjectService.get_project_members(db, project_id, current_user)
+    """Get members of a project with optional search (Admin or project member)."""
+    members = await ProjectService.get_project_members(db, project_id, current_user, search)
     return members

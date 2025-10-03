@@ -37,8 +37,10 @@ export const projectsApi = {
   },
 
   // Get project members
-  getMembers: async (projectId) => {
-    const response = await axios.get(`/projects/${projectId}/members`);
+  getMembers: async (projectId, params = {}) => {
+    const response = await axios.get(`/projects/${projectId}/members`, {
+      params,
+    });
     return response.data;
   },
 
