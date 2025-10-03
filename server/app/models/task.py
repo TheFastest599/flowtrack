@@ -18,9 +18,11 @@ class Task(Base):
     deadline = Column(Date, nullable=True)
     project_id = Column(UUID(as_uuid=True), ForeignKey('projects.id'), nullable=False)
     assigned_to = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=True)
+    created_by = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
     created_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
     # Relationships
     project = relationship("Project", back_populates="tasks")
-    assignee = relationship("User", back_populates="tasks")
+    assignee = relationship("User", back_populates="tasks", foreign_keys=[assigned_to])
+    creator = relationship("User", back_populates="created_tasks", foreign_keys=[created_by])

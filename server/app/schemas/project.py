@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from uuid import UUID
-from datetime import date
+from datetime import date, datetime
 from typing import Optional, List
 from app.models.enums import ProjectStatus
 
@@ -39,8 +39,8 @@ class ProjectResponse(ProjectBase):
     id: UUID
     status: ProjectStatus
     created_by: UUID
-    created_at: date
-    updated_at: date
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True

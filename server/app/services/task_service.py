@@ -30,7 +30,7 @@ class TaskService:
             query = query.where(Task.assigned_to == assigned_to)
         
         # Filter for non-admin users: only tasks assigned to them
-        if current_user.role != "admin":
+        if current_user['role'] != "admin":
             query = query.where(Task.assigned_to == current_user.id)
         
         query = query.offset(skip).limit(limit)
@@ -43,7 +43,7 @@ class TaskService:
         query = select(Task).where(Task.id == task_id)
         
         # Filter for non-admin users
-        if current_user.role != "admin":
+        if current_user['role'] != "admin":
             query = query.where(Task.assigned_to == current_user.id)
         
         result = await db.execute(query)
@@ -51,17 +51,26 @@ class TaskService:
         return TaskResponse.from_orm(task) if task else None
 
     @staticmethod
-    async def create_task(db: AsyncSession, task_data: TaskCreate, current_user: User) -> TaskResponse:
-        # Check if user can create (e.g., is member of project or admin)
-        # Assuming project membership check is done here or in schema validation
+    async def create_task(db: AsyncSession, task_data: TaskCreate, current_user: dict) -> TaskResponse:
+        from app.models.project import Project
+        from fastapi import HTTPException
+        
+        if current_user['role'] != "admin":
+            # Check if user is member of the project
+            project_query = select(Project).where(Project.id == task_data.project_id).where(Project.members.any(User.id == current_user['id']))
+            project_result = await db.execute(project_query)
+            if not project_result.scalar_one_or_none():
+                raise HTTPException(status_code=403, detail="You are not a member of this project")
+        
         task = Task(
             title=task_data.title,
             description=task_data.description,
             status=task_data.status,
             priority=task_data.priority,
+            deadline=task_data.deadline,
             project_id=task_data.project_id,
-            assigned_to=task_data.assigned_to or current_user.id,  # Default to self
-            created_by=current_user.id
+            assigned_to=task_data.assigned_to,
+            created_by=current_user['id']
         )
         db.add(task)
         await db.commit()
@@ -71,7 +80,7 @@ class TaskService:
     @staticmethod
     async def update_task(db: AsyncSession, task_id: UUID, task_data: TaskUpdate, current_user: User) -> Optional[TaskResponse]:
         query = select(Task).where(Task.id == task_id)
-        if current_user.role != "admin":
+        if current_user['role'] != "admin":
             query = query.where(Task.assigned_to == current_user.id)
         
         result = await db.execute(query)
@@ -89,7 +98,7 @@ class TaskService:
     @staticmethod
     async def delete_task(db: AsyncSession, task_id: UUID, current_user: User) -> bool:
         query = select(Task).where(Task.id == task_id)
-        if current_user.role != "admin":
+        if current_user['role'] != "admin":
             query = query.where(Task.assigned_to == current_user.id)
         
         result = await db.execute(query)
@@ -104,7 +113,7 @@ class TaskService:
     @staticmethod
     async def move_task(db: AsyncSession, task_id: UUID, new_status: str, current_user: User) -> Optional[TaskResponse]:
         query = select(Task).where(Task.id == task_id)
-        if current_user.role != "admin":
+        if current_user['role'] != "admin":
             query = query.where(Task.assigned_to == current_user.id)
         
         result = await db.execute(query)

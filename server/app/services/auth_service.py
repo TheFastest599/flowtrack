@@ -101,7 +101,10 @@ class AuthService:
         try:
             payload = decode_token(refresh_token)
             email: str = payload.get("email")
-            if email is None:
+            role : str = payload.get("role")
+            id : str = payload.get("id")
+
+            if email is None or role is None or id is None:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid refresh token"
@@ -111,20 +114,11 @@ class AuthService:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid refresh token"
             )
-        
-        # Get user from database
-        result = await db.execute(select(User).where(User.email == email))
-        user = result.scalar_one_or_none()
-        
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found"
-            )
+ 
         
         # Generate new access token
         access_token = create_access_token(
-            data={"id" :  str(user.id) ,"email": user.email, "role": user.role}
+            data={"id" :  id ,"email": email, "role": role}
         )
         
         return {

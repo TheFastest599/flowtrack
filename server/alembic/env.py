@@ -15,8 +15,8 @@ from app.models import user, project, task, activity_log  # Import all models
 config = context.config
 
 # Interpret the config file for Python logging
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+# if config.config_file_name is not None:
+#     fileConfig(config.config_file_name)
 
 # Set target metadata for autogenerate
 target_metadata = Base.metadata

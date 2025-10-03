@@ -1,11 +1,4 @@
 import { axios } from "./index"; // Import the configured axios
-import { useAuthStore } from "@/stores/authStore";
-
-// Set token in axios headers (run this once or in a wrapper)
-const { token } = useAuthStore.getState();
-if (token) {
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-}
 
 export const projectsApi = {
   // Create project

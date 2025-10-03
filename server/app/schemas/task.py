@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import date
+from datetime import date, datetime
 from uuid import UUID
 from app.models.enums import TaskStatus, TaskPriority
 
@@ -16,8 +16,8 @@ class TaskRead(TaskBase):  # Add this
     id: UUID
     project_id: UUID
     assigned_to: Optional[UUID] = None
-    created_at: date
-    updated_at: date
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -42,8 +42,8 @@ class TaskResponse(TaskBase):
     id: UUID
     project_id: UUID
     assigned_to: Optional[UUID] = None
-    created_at: date
-    updated_at: date
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True

@@ -112,7 +112,7 @@ const menuItems = [
   },
 ];
 
-export function DashboardSidebar() {
+export function AppSidebar() {
   const pathname = usePathname();
 
   return (

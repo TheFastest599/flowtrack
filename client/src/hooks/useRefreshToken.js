@@ -28,7 +28,7 @@ const useRefreshToken = () => {
     // Run once on startup
     refresh();
 
-    const interval = setInterval(refresh, 14 * 60 * 1000);
+    const interval = setInterval(refresh, 10 * 60 * 1000);
 
     // Cleanup interval on unmount
     return () => clearInterval(interval);

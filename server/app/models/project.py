@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Date, Enum, ForeignKey, DateTime
+from sqlalchemy import Column, String, Date, Enum, ForeignKey, DateTime, Table
 from sqlalchemy.orm import relationship
 from uuid import uuid4
 from datetime import datetime, timezone
@@ -6,6 +6,10 @@ from sqlalchemy.dialects.postgresql import UUID
 from app.database import Base
 from app.models.enums import ProjectStatus
 
+project_members = Table('project_members', Base.metadata,
+    Column('project_id', UUID(as_uuid=True), ForeignKey('projects.id'), primary_key=True),
+    Column('user_id', UUID(as_uuid=True), ForeignKey('users.id'), primary_key=True)
+)
 
 class Project(Base):
     __tablename__ = "projects"
@@ -22,3 +26,4 @@ class Project(Base):
     # Relationships
     creator = relationship("User", back_populates="projects")
     tasks = relationship("Task", back_populates="project", cascade="all, delete-orphan")
+    members = relationship("User", secondary=project_members, back_populates="member_projects")

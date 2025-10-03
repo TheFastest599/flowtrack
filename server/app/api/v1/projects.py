@@ -20,7 +20,7 @@ async def create_project(
     current_user: User = Depends(get_admin_user)
 ):
     """Create a new project (Admin only)."""
-    project = await ProjectService.create_project(db, project_data, current_user.id)
+    project = await ProjectService.create_project(db, project_data, current_user)
     return project
 
 
@@ -64,10 +64,10 @@ async def update_project(
     project_id: UUID,
     project_data: ProjectUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_admin_user)
+    current_user: User = Depends(get_current_user)
 ):
-    """Update project (Admin only)."""
-    project = await ProjectService.update_project(db, project_id, project_data, current_user.id)
+    """Update project: Admins can update any, members can update projects they belong to."""
+    project = await ProjectService.update_project(db, project_id, project_data, current_user)
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -83,7 +83,7 @@ async def delete_project(
     current_user: User = Depends(get_admin_user)
 ):
     """Delete project (Admin only)."""
-    success = await ProjectService.delete_project(db, project_id, current_user.id)
+    success = await ProjectService.delete_project(db, project_id, current_user)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
