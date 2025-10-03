@@ -26,7 +26,7 @@ export default function RootLayout({ children }) {
         <RefreshTokenWrapper />
         <Navbar />
         <QueryProvider>
-          <main className="max-w-7xl my-4 mx-4 sm:mx-6 md:mx-auto mih-h-screen">
+          <main className="max-w-7xl my-4 mx-4 sm:mx-6 lg:mx-auto mih-h-screen">
             {children}
           </main>
         </QueryProvider>
