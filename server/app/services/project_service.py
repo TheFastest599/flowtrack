@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
+from sqlalchemy.orm import joinedload
 from uuid import UUID
 from typing import List, Optional
 from datetime import datetime, timezone
@@ -19,30 +20,54 @@ class ProjectService:
         limit: int = 100,
         status: Optional[str] = None
     ) -> List[ProjectResponse]:
-        query = select(Project)
+        query = select(Project).options(joinedload(Project.creator))
         if status:
             query = query.where(Project.status == status)
         
         # Filter for non-admin users: only projects where user is a member
         if current_user['role'] != "admin":
-            query = query.where(Project.members.any(User.id == current_user.id))  # Assuming many-to-many relationship
+            query = query.where(Project.members.any(User.id == current_user['id']))  # Assuming many-to-many relationship
         
         query = query.offset(skip).limit(limit)
         result = await db.execute(query)
-        projects = result.scalars().all()
-        return [ProjectResponse.from_orm(p) for p in projects]
+        projects = result.unique().scalars().all()
+        return [
+            ProjectResponse(
+                id=p.id,
+                name=p.name,
+                description=p.description,
+                deadline=p.deadline,
+                status=p.status,
+                created_by=p.created_by,
+                creator_name=p.creator.name,
+                created_at=p.created_at,
+                updated_at=p.updated_at
+            ) for p in projects
+        ]
 
     @staticmethod
-    async def get_project(db: AsyncSession, project_id: UUID, current_user: User) -> Optional[ProjectResponse]:
-        query = select(Project).where(Project.id == project_id)
+    async def get_project(db: AsyncSession, project_id: UUID, current_user: dict) -> Optional[ProjectResponse]:
+        query = select(Project).options(joinedload(Project.creator)).where(Project.id == project_id)
         
         # Filter for non-admin users
         if current_user['role'] != "admin":
-            query = query.where(Project.members.any(User.id == current_user.id))
+            query = query.where(Project.members.any(User.id == current_user['id']))
         
         result = await db.execute(query)
-        project = result.scalar_one_or_none()
-        return ProjectResponse.from_orm(project) if project else None
+        project = result.unique().scalar_one_or_none()
+        if not project:
+            return None
+        return ProjectResponse(
+            id=project.id,
+            name=project.name,
+            description=project.description,
+            deadline=project.deadline,
+            status=project.status,
+            created_by=project.created_by,
+            creator_name=project.creator.name,
+            created_at=project.created_at,
+            updated_at=project.updated_at
+        )
 
     @staticmethod
     async def get_project_progress(db: AsyncSession, project_id: UUID, current_user: dict) -> Optional[dict]:
@@ -79,7 +104,17 @@ class ProjectService:
         db.add(project)
         await db.commit()
         await db.refresh(project)
-        return ProjectResponse.from_orm(project)
+        return ProjectResponse(
+            id=project.id,
+            name=project.name,
+            description=project.description,
+            deadline=project.deadline,
+            status=project.status,
+            created_by=project.created_by,
+            creator_name=current_user['name'],
+            created_at=project.created_at,
+            updated_at=project.updated_at
+        )
 
     @staticmethod
     async def update_project(db: AsyncSession, project_id: UUID, project_data: ProjectUpdate, current_user: dict) -> Optional[ProjectResponse]:
@@ -93,7 +128,7 @@ class ProjectService:
             if not member_result.scalar_one_or_none():
                 raise HTTPException(status_code=403, detail="You are not authorized to update this project")
         
-        query = select(Project).where(Project.id == project_id)
+        query = select(Project).options(joinedload(Project.creator)).where(Project.id == project_id)
         result = await db.execute(query)
         project = result.scalar_one_or_none()
         if not project:
@@ -105,7 +140,17 @@ class ProjectService:
         
         await db.commit()
         await db.refresh(project)
-        return ProjectResponse.from_orm(project)
+        return ProjectResponse(
+            id=project.id,
+            name=project.name,
+            description=project.description,
+            deadline=project.deadline,
+            status=project.status,
+            created_by=project.created_by,
+            creator_name=project.creator.name,
+            created_at=project.created_at,
+            updated_at=project.updated_at
+        )
 
     @staticmethod
     async def delete_project(db: AsyncSession, project_id: UUID, current_user: dict) -> bool:
@@ -121,3 +166,60 @@ class ProjectService:
         await db.delete(project)
         await db.commit()
         return True
+
+    @staticmethod
+    async def add_member_to_project(db: AsyncSession, project_id: UUID, user_id: UUID, current_user: dict) -> bool:
+        if current_user['role'] != "admin":
+            raise HTTPException(status_code=403, detail="Only admins can assign members to projects")
+        
+        result = await db.execute(select(Project).options(joinedload(Project.members)).where(Project.id == project_id))
+        project = result.unique().scalar_one_or_none()
+        if not project:
+            return False
+        
+        user = await db.get(User, user_id)
+        if not user:
+            return False
+        
+        if user not in project.members:
+            project.members.append(user)
+            await db.commit()
+        
+        return True
+
+    @staticmethod
+    async def remove_member_from_project(db: AsyncSession, project_id: UUID, user_id: UUID, current_user: dict) -> bool:
+        if current_user['role'] != "admin":
+            raise HTTPException(status_code=403, detail="Only admins can remove members from projects")
+        
+        result = await db.execute(select(Project).options(joinedload(Project.members)).where(Project.id == project_id))
+        project = result.unique().scalar_one_or_none()
+        if not project:
+            return False
+        
+        user = await db.get(User, user_id)
+        if not user:
+            return False
+        
+        if user in project.members:
+            project.members.remove(user)
+            await db.commit()
+        
+        return True
+
+    @staticmethod
+    async def get_project_members(db: AsyncSession, project_id: UUID, current_user: dict) -> List[dict]:
+        # Allow if admin or member of the project
+        if current_user['role'] != "admin":
+            member_query = select(Project).where(Project.id == project_id).where(Project.members.any(User.id == current_user['id']))
+            result = await db.execute(member_query)
+            if not result.scalar_one_or_none():
+                raise HTTPException(status_code=403, detail="Access denied")
+        
+        result = await db.execute(select(Project).options(joinedload(Project.members)).where(Project.id == project_id))
+        project = result.unique().scalar_one_or_none()
+        if not project:
+            return []
+        
+        # Return list of user dicts
+        return [{"id": str(u.id), "name": u.name, "email": u.email} for u in project.members]

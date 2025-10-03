@@ -35,4 +35,20 @@ export const projectsApi = {
     const response = await axios.get(`/projects/${projectId}/progress`);
     return response.data;
   },
+
+  // Get project members
+  getMembers: async (projectId) => {
+    const response = await axios.get(`/projects/${projectId}/members`);
+    return response.data;
+  },
+
+  // Add member to project
+  addMember: async (projectId, userId) => {
+    await axios.post(`/projects/${projectId}/members/${userId}`);
+  },
+
+  // Remove member from project
+  removeMember: async (projectId, userId) => {
+    await axios.delete(`/projects/${projectId}/members/${userId}`);
+  },
 };

@@ -39,6 +39,7 @@ class ProjectResponse(ProjectBase):
     id: UUID
     status: ProjectStatus
     created_by: UUID
+    creator_name: str
     created_at: datetime
     updated_at: datetime
 

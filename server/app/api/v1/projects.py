@@ -106,3 +106,48 @@ async def get_project_progress(
             detail="Project not found or access denied"
         )
     return progress
+
+
+@router.post("/{project_id}/members/{user_id}", status_code=status.HTTP_201_CREATED)
+async def add_member_to_project(
+    project_id: UUID,
+    user_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """Add a member to a project (Admin only)."""
+    success = await ProjectService.add_member_to_project(db, project_id, user_id, current_user)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project or user not found"
+        )
+    return {"message": "Member added to project"}
+
+
+@router.delete("/{project_id}/members/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_member_from_project(
+    project_id: UUID,
+    user_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
+):
+    """Remove a member from a project (Admin only)."""
+    success = await ProjectService.remove_member_from_project(db, project_id, user_id, current_user)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project or user not found"
+        )
+    return None
+
+
+@router.get("/{project_id}/members")
+async def get_project_members(
+    project_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get members of a project (Admin or project member)."""
+    members = await ProjectService.get_project_members(db, project_id, current_user)
+    return members

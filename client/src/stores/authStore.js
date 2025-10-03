@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import auth from "@/lib/api/auth";
 import { toast } from "sonner";
+import { queryClient } from "@/components/QueryProvider";
 
 export const useAuthStore = create(
   persist(
@@ -105,6 +106,7 @@ export const useAuthStore = create(
       },
       logout: async () => {
         set({ loggedIn: false, user: null, token: null, error: null });
+        queryClient.clear();
         try {
           await auth.logout();
           toast("Logged out successfully", { type: "success" });

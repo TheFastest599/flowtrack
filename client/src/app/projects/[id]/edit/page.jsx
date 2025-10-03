@@ -23,7 +23,7 @@ import { useEffect } from "react";
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
-  status: z.enum(["active", "completed"]),
+  status: z.enum(["pending", "in_progress", "completed"]),
   deadline: z.string().optional(),
 });
 
@@ -69,7 +69,7 @@ export default function EditProjectPage() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div className="p-6">
+      <div>
         <h1 className="text-3xl font-bold mb-4">Edit Project</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input {...register("name")} placeholder="Name" />
@@ -82,7 +82,8 @@ export default function EditProjectPage() {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>

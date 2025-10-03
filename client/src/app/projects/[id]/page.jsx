@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Edit } from "lucide-react";
+import { Loader2, Edit, Users } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { projectsApi } from "@/lib/api/projects";
 import { tasksApi } from "@/lib/api/tasks";
@@ -47,17 +47,27 @@ export default function ProjectDetailPage() {
     );
 
   return (
-    <div className="p-6">
+    <div>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold">{project.name}</h1>
-        {isAdmin && (
-          <Button asChild>
-            <Link href={`/projects/${id}/edit`}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </Link>
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {isAdmin && (
+            <>
+              <Button asChild>
+                <Link href={`/projects/${id}/edit`}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link href={`/projects/${id}/manage-members`}>
+                  <Users className="mr-2 h-4 w-4" />
+                  Manage Members
+                </Link>
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       <Card className="mb-4">
@@ -72,7 +82,17 @@ export default function ProjectDetailPage() {
             <strong>Status:</strong> {project.status}
           </p>
           <p>
-            <strong>Created By:</strong> {project.created_by}
+            <strong>Created By:</strong>{" "}
+            {isAdmin ? (
+              <Link
+                href={`/members/${project.created_by}`}
+                className="text-blue-600 hover:underline"
+              >
+                {project.creator_name}
+              </Link>
+            ) : (
+              project.creator_name
+            )}
           </p>
         </CardContent>
       </Card>

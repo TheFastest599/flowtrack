@@ -47,7 +47,7 @@ export default function CreateProjectPage() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div className="p-6">
+      <div>
         <h1 className="text-3xl font-bold mb-4">Create Project</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input {...register("name")} placeholder="Name" />

@@ -20,9 +20,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Plus, Edit, Trash, Eye } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Loader2, Plus, Edit, Trash, Eye, Users } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { projectsApi } from "@/lib/api/projects";
+import { me, getUsers } from "@/lib/api/user";
 import Link from "next/link";
 import { toast } from "sonner"; // Assuming you have sonner for toasts
 
@@ -30,6 +38,8 @@ export default function ProjectsPage() {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState({ status: "", skip: 0, limit: 10 });
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [isMembersDialogOpen, setIsMembersDialogOpen] = useState(false);
 
   const {
     data: projects,
@@ -47,6 +57,12 @@ export default function ProjectsPage() {
       toast("Project deleted successfully", { type: "success" });
     },
     onError: (error) => toast.error(error.message),
+  });
+
+  const { data: members, isLoading: membersLoading } = useQuery({
+    queryKey: ["projectMembers", selectedProject?.id],
+    queryFn: () => projectsApi.getMembers(selectedProject.id),
+    enabled: !!selectedProject && isMembersDialogOpen,
   });
 
   const handleFilterChange = (key, value) => {
@@ -129,7 +145,18 @@ export default function ProjectsPage() {
               </TableCell>
               <TableCell>{project.description}</TableCell>
               <TableCell>{project.status}</TableCell>
-              <TableCell>{project.created_by}</TableCell>
+              <TableCell>
+                {isAdmin ? (
+                  <Link
+                    href={`/members/${project.created_by}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {project.creator_name}
+                  </Link>
+                ) : (
+                  project.creator_name
+                )}
+              </TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" asChild>
@@ -154,6 +181,53 @@ export default function ProjectsPage() {
                       </Button>
                     </>
                   )}
+                  <Dialog
+                    open={isMembersDialogOpen}
+                    onOpenChange={setIsMembersDialogOpen}
+                  >
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedProject(project);
+                          setIsMembersDialogOpen(true);
+                        }}
+                      >
+                        <Users className="h-4 w-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>
+                          Members of {selectedProject?.name}
+                        </DialogTitle>
+                      </DialogHeader>
+                      {membersLoading ? (
+                        <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                      ) : (
+                        <div>
+                          {members?.length ? (
+                            <ul className="space-y-2">
+                              {members.map((member) => (
+                                <li
+                                  key={member.id}
+                                  className="flex items-center gap-2"
+                                >
+                                  <span>{member.name}</span>
+                                  <span className="text-sm text-gray-500">
+                                    ({member.email})
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p>No members assigned.</p>
+                          )}
+                        </div>
+                      )}
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </TableCell>
             </TableRow>

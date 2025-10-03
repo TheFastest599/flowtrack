@@ -50,9 +50,13 @@ class UserService:
         return result.scalar_one_or_none()
 
     @staticmethod
-    async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[User]:
-        """Get all users with pagination."""
-        result = await db.execute(select(User).offset(skip).limit(limit))
+    async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100, search: Optional[str] = None) -> List[User]:
+        """Get all users with pagination and optional search."""
+        query = select(User)
+        if search:
+            query = query.where(User.name.ilike(f"%{search}%") | User.email.ilike(f"%{search}%"))
+        query = query.offset(skip).limit(limit)
+        result = await db.execute(query)
         return list(result.scalars().all())
 
     @staticmethod
