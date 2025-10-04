@@ -40,7 +40,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       const res = await login(formData.email, formData.password);
-      if (res) router.push("/");
+      if (res) router.push("/dashboard");
       // console.log(res);
     } catch (err) {
       // Error is handled in the store
@@ -52,7 +52,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center min-h-[60vh]">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">

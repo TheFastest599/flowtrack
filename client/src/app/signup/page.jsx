@@ -55,7 +55,7 @@ export default function SignupPage() {
         password: formData.password,
       });
       // Redirect on success
-      if (res) router.push("/");
+      if (res) router.push("/dashboard");
     } catch (err) {
       // Error is handled in the store
     }
@@ -70,7 +70,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center min-h-[60vh]">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">

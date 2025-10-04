@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +11,10 @@ import {
 } from "@/components/ui/card";
 import { CheckCircle, Users, BarChart3, Shield } from "lucide-react";
 
+import { useAuthStore } from "@/stores/authStore";
+
 export default function Home() {
+  const { loggedIn } = useAuthStore();
   return (
     <div>
       {/* Hero Section */}
@@ -23,14 +28,20 @@ export default function Home() {
           teams, track progress, and boost productivity with our scalable,
           secure platform.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        {loggedIn ? (
           <Button asChild size="lg" className="px-8">
-            <Link href="/signup">Get Started Free</Link>
+            <Link href="/dashboard">Dashboard</Link>
           </Button>
-          <Button variant="outline" size="lg" asChild className="px-8">
-            <Link href="/login">Sign In</Link>
-          </Button>
-        </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild size="lg" className="px-8">
+              <Link href="/signup">Get Started Free</Link>
+            </Button>
+            <Button variant="outline" size="lg" asChild className="px-8">
+              <Link href="/login">Sign In</Link>
+            </Button>
+          </div>
+        )}
       </section>
 
       {/* Features Section */}
