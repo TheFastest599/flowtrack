@@ -7,6 +7,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
+import { AutoBreadcrumb } from "@/components/Breadcrumb";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -27,6 +28,7 @@ export default function RootLayout({ children }) {
         <Navbar />
         <QueryProvider>
           <main className="max-w-7xl my-4 mx-4 sm:mx-6 xl:mx-auto min-h-screen">
+            <AutoBreadcrumb />
             {children}
           </main>
         </QueryProvider>

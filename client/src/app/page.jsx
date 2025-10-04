@@ -11,7 +11,7 @@ import { CheckCircle, Users, BarChart3, Shield } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen mx-4 sm:mx-6 md:mx-auto">
+    <div>
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">

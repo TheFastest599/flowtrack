@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Edit, Users } from "lucide-react";
+import { Loader2, Edit, Users, SquareKanban } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { projectsApi } from "@/lib/api/projects";
 import { tasksApi } from "@/lib/api/tasks";
@@ -54,9 +54,9 @@ export default function ProjectDetailPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold">{project.name}</h1>
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">{project.name}</h1>
+        <div className="flex gap-2 flex-wrap">
           {isAdmin && (
             <>
               <Button asChild>
@@ -73,11 +73,17 @@ export default function ProjectDetailPage() {
               </Button>
             </>
           )}
+          <Button asChild>
+            <Link href={`/projects/${id}/kanban`}>
+              <SquareKanban className="mr-2 h-4 w-4" />
+              Kanban
+            </Link>
+          </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-        <Card>
+      <div className="grid grid-cols-2 gap-2">
+        <Card className="col-span-2 md:col-span-1">
           <CardHeader>
             <CardTitle>Details</CardTitle>
           </CardHeader>
@@ -106,7 +112,7 @@ export default function ProjectDetailPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="col-span-2 md:col-span-1">
           <CardHeader>
             <CardTitle>Progress</CardTitle>
           </CardHeader>

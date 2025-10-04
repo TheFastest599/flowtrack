@@ -27,7 +27,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, Plus, Edit, Trash, Eye, Users } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Edit,
+  Trash,
+  Eye,
+  Users,
+  SquareKanban,
+} from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { projectsApi } from "@/lib/api/projects";
 import { me, getUsers } from "@/lib/api/user";
@@ -162,6 +170,11 @@ export default function ProjectsPage() {
                   <Button variant="outline" size="sm" asChild>
                     <Link href={`/projects/${project.id}`}>
                       <Eye className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/projects/${project.id}/kanban`}>
+                      <SquareKanban className="h-4 w-4" />
                     </Link>
                   </Button>
                   {isAdmin && (

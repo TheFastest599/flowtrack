@@ -142,14 +142,6 @@ export default function ProjectKanbanPage() {
     <div>
       <div className="flex justify-between items-start mb-6">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href={`/projects/${projectId}`}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Project
-              </Link>
-            </Button>
-          </div>
           <h1 className="text-3xl font-bold">{project?.name} - Kanban Board</h1>
           {project?.description && (
             <p className="text-gray-600 mt-1">{project.description}</p>
@@ -200,6 +192,7 @@ export default function ProjectKanbanPage() {
                     <div className="flex items-start justify-between gap-2">
                       <Link
                         href={`/tasks/${task.id}`}
+                        onClick={(e) => e.stopPropagation()}
                         className="flex-1 font-medium text-sm hover:underline"
                       >
                         {task.name}
