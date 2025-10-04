@@ -17,6 +17,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 
+import DemoAccountsDialog from "@/components/login/DemoAccountsDialog";
+
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -38,7 +40,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       const res = await login(formData.email, formData.password);
-      router.push("/");
+      if (res) router.push("/");
       // console.log(res);
     } catch (err) {
       // Error is handled in the store
@@ -127,6 +129,9 @@ export default function LoginPage() {
             <Link href="/signup" className="text-primary hover:underline">
               Sign up
             </Link>
+          </div>
+          <div className="mt-4 text-center">
+            <DemoAccountsDialog />
           </div>
         </CardContent>
       </Card>

@@ -59,9 +59,25 @@ cp .env.example .env
 Edit `.env` with your actual configuration:
 
 ```env
+# Database Configuration
 DATABASE_URL=postgresql+asyncpg://flowtrack_user:flowtrack_pass@localhost:5432/flowtrack_db
+
+# Redis/Valkey Configuration (for Pub/Sub and caching)
 REDIS_URL=redis://localhost:6379/0
-JWT_SECRET=your-super-secret-jwt-key-change-this
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# CORS Configuration
+ALLOW_ORIGINS=["http://localhost:3000","http://localhost:3001"]
+
+# Application Configuration
+APP_NAME="FlowTrack API"
+VERSION=1.0.0
+DEBUG=True
 ```
 
 ### 5. Setup PostgreSQL Database
@@ -142,45 +158,666 @@ ws.onmessage = (event) => {
 
 ---
 
-## 🔐 API Endpoints
+## 📚 API Documentation
+
+The FlowTrack API is built with FastAPI and provides comprehensive REST endpoints for project and task management. All endpoints return JSON responses.
+
+### Interactive Documentation
+
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **OpenAPI Schema**: http://localhost:8000/openapi.json
 
 ### Authentication
 
-- `POST /api/v1/auth/register` - Register new user
-- `POST /api/v1/auth/login` - Login and get tokens
-- `POST /api/v1/auth/refresh` - Refresh access token
+All API endpoints (except authentication) require JWT token authentication. Include the token in the `Authorization` header:
+
+```
+Authorization: Bearer <access_token>
+```
+
+Tokens are obtained via login and can be refreshed using the refresh endpoint.
+
+#### Register User
+
+**POST** `/api/v1/auth/register`
+
+Creates a new user account.
+
+**Request Body:**
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "securepassword"
+}
+```
+
+**Response (201):**
+
+```json
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "token_type": "bearer"
+}
+```
+
+**Errors:**
+
+- `400`: Invalid input data
+- `409`: Email already registered
+
+#### Login
+
+**POST** `/api/v1/auth/login`
+
+Authenticates a user and returns JWT tokens.
+
+**Request Body:**
+
+```json
+{
+  "email": "john@example.com",
+  "password": "securepassword"
+}
+```
+
+**Response (200):**
+
+```json
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "token_type": "bearer"
+}
+```
+
+**Errors:**
+
+- `401`: Invalid credentials
+
+#### Refresh Token
+
+**POST** `/api/v1/auth/refresh`
+
+Refreshes the access token using the refresh token stored in cookies.
+
+**Response (200):**
+
+```json
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "token_type": "bearer"
+}
+```
+
+**Errors:**
+
+- `401`: Refresh token missing or invalid
+
+#### Logout
+
+**POST** `/api/v1/auth/logout`
+
+Clears the refresh token cookie.
+
+**Response (204):** No content
 
 ### Users
 
-- `GET /api/v1/users/me` - Get current user
-- `GET /api/v1/users/` - List all users (Admin)
-- `GET /api/v1/users/{id}` - Get user by ID (Admin)
-- `PUT /api/v1/users/{id}` - Update user (Admin)
-- `DELETE /api/v1/users/{id}` - Delete user (Admin)
+#### Get Current User
+
+**GET** `/api/v1/users/me`
+
+Retrieves the current authenticated user's profile.
+
+**Authentication:** Required
+
+**Response (200):**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "role": "member",
+  "created_at": "2023-10-01T10:00:00Z",
+  "updated_at": "2023-10-01T10:00:00Z"
+}
+```
+
+#### List Users
+
+**GET** `/api/v1/users/`
+
+Lists all users with optional filtering. Admin only.
+
+**Authentication:** Required (Admin)
+
+**Query Parameters:**
+
+- `skip` (int): Number of records to skip (default: 0)
+- `limit` (int): Maximum number of records to return (default: 100)
+- `search` (str): Search by name or email
+- `role` (str): Filter by role ("admin" or "member")
+
+**Response (200):**
+
+```json
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "role": "member",
+    "created_at": "2023-10-01T10:00:00Z",
+    "updated_at": "2023-10-01T10:00:00Z"
+  }
+]
+```
+
+#### Get User by ID
+
+**GET** `/api/v1/users/{user_id}`
+
+Retrieves a specific user by ID. Admin only.
+
+**Authentication:** Required (Admin)
+
+**Response (200):** Same as current user response
+
+**Errors:**
+
+- `404`: User not found
+
+#### Update User
+
+**PUT** `/api/v1/users/{user_id}`
+
+Updates a user's information. Admin only.
+
+**Authentication:** Required (Admin)
+
+**Request Body:**
+
+```json
+{
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "role": "admin"
+}
+```
+
+**Response (200):** Updated user object
+
+**Errors:**
+
+- `404`: User not found
+
+#### Delete User
+
+**DELETE** `/api/v1/users/{user_id}`
+
+Deletes a user. Admin only.
+
+**Authentication:** Required (Admin)
+
+**Response (204):** No content
+
+**Errors:**
+
+- `404`: User not found
 
 ### Projects
 
-- `POST /api/v1/projects/` - Create project (Admin)
-- `GET /api/v1/projects/` - List projects
-- `GET /api/v1/projects/{id}` - Get project details
-- `PUT /api/v1/projects/{id}` - Update project (Admin)
-- `DELETE /api/v1/projects/{id}` - Delete project (Admin)
-- `GET /api/v1/projects/{id}/progress` - Get project progress
+#### Create Project
+
+**POST** `/api/v1/projects/`
+
+Creates a new project. Admin only.
+
+**Authentication:** Required (Admin)
+
+**Request Body:**
+
+```json
+{
+  "name": "Website Redesign",
+  "description": "Complete overhaul of company website",
+  "deadline": "2023-12-31"
+}
+```
+
+**Response (201):**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440001",
+  "name": "Website Redesign",
+  "description": "Complete overhaul of company website",
+  "deadline": "2023-12-31",
+  "status": "pending",
+  "created_by": "550e8400-e29b-41d4-a716-446655440000",
+  "creator_name": "John Doe",
+  "created_at": "2023-10-01T10:00:00Z",
+  "updated_at": "2023-10-01T10:00:00Z"
+}
+```
+
+#### List Projects
+
+**GET** `/api/v1/projects/`
+
+Lists projects. Users see only their projects, admins see all.
+
+**Authentication:** Required
+
+**Query Parameters:**
+
+- `skip` (int): Number of records to skip
+- `limit` (int): Maximum number of records to return
+- `status` (str): Filter by status ("pending", "in_progress", "completed")
+- `query` (str): Search by name or description
+
+**Response (200):** Array of project objects
+
+#### Get Project
+
+**GET** `/api/v1/projects/{project_id}`
+
+Retrieves project details. Users can only access their projects, admins access all.
+
+**Authentication:** Required
+
+**Response (200):** Project object
+
+**Errors:**
+
+- `404`: Project not found or access denied
+
+#### Update Project
+
+**PUT** `/api/v1/projects/{project_id}`
+
+Updates project information. Admins can update any project, members can update projects they belong to.
+
+**Authentication:** Required
+
+**Request Body:**
+
+```json
+{
+  "name": "Website Redesign v2",
+  "status": "in_progress"
+}
+```
+
+**Response (200):** Updated project object
+
+#### Delete Project
+
+**DELETE** `/api/v1/projects/{project_id}`
+
+Deletes a project. Admin only.
+
+**Authentication:** Required (Admin)
+
+**Response (204):** No content
+
+#### Get Project Progress
+
+**GET** `/api/v1/projects/{project_id}/progress`
+
+Retrieves project progress statistics.
+
+**Authentication:** Required
+
+**Response (200):**
+
+```json
+{
+  "total_tasks": 10,
+  "completed_tasks": 3,
+  "in_progress_tasks": 4,
+  "todo_tasks": 3,
+  "progress_percentage": 30.0
+}
+```
+
+#### Add Member to Project
+
+**POST** `/api/v1/projects/{project_id}/members/{user_id}`
+
+Adds a user to a project. Admin only.
+
+**Authentication:** Required (Admin)
+
+**Response (201):**
+
+```json
+{
+  "message": "Member added to project"
+}
+```
+
+#### Remove Member from Project
+
+**DELETE** `/api/v1/projects/{project_id}/members/{user_id}`
+
+Removes a user from a project. Admin only.
+
+**Authentication:** Required (Admin)
+
+**Response (204):** No content
+
+#### Get Project Members
+
+**GET** `/api/v1/projects/{project_id}/members`
+
+Lists project members with optional search.
+
+**Authentication:** Required (Admin or project member)
+
+**Query Parameters:**
+
+- `search` (str): Search by name or email
+
+**Response (200):** Array of user objects
 
 ### Tasks
 
-- `POST /api/v1/tasks/` - Create task
-- `GET /api/v1/tasks/` - List tasks (with filters)
-- `GET /api/v1/tasks/{id}` - Get task details
-- `PUT /api/v1/tasks/{id}` - Update task
-- `DELETE /api/v1/tasks/{id}` - Delete task
-- `PATCH /api/v1/tasks/{id}/move` - Move task (Kanban)
+#### Create Task
+
+**POST** `/api/v1/tasks/`
+
+Creates a new task. Users can create if they are project members, admins always.
+
+**Authentication:** Required
+
+**Request Body:**
+
+```json
+{
+  "title": "Design homepage mockup",
+  "description": "Create wireframes and mockups for the new homepage",
+  "priority": "high",
+  "status": "todo",
+  "deadline": "2023-11-15",
+  "project_id": "550e8400-e29b-41d4-a716-446655440001",
+  "assigned_to": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Response (201):** Task object
+
+#### List Tasks
+
+**GET** `/api/v1/tasks/`
+
+Lists tasks. Users see only assigned tasks, admins see all.
+
+**Authentication:** Required
+
+**Query Parameters:**
+
+- `skip` (int): Number of records to skip
+- `limit` (int): Maximum number of records to return
+- `project_id` (str): Filter by project UUID
+- `status` (str): Filter by status ("todo", "in_progress", "done")
+- `priority` (str): Filter by priority ("low", "medium", "high")
+- `assigned_to` (str): Filter by assigned user UUID
+
+**Response (200):** Array of task objects
+
+#### Get Task
+
+**GET** `/api/v1/tasks/{task_id}`
+
+Retrieves task details. Users can only access assigned tasks, admins access all.
+
+**Authentication:** Required
+
+**Response (200):**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440002",
+  "title": "Design homepage mockup",
+  "description": "Create wireframes and mockups for the new homepage",
+  "priority": "high",
+  "status": "todo",
+  "deadline": "2023-11-15",
+  "project_id": "550e8400-e29b-41d4-a716-446655440001",
+  "assigned_to": "550e8400-e29b-41d4-a716-446655440000",
+  "assigned_to_name": "John Doe",
+  "created_at": "2023-10-01T10:00:00Z",
+  "updated_at": "2023-10-01T10:00:00Z"
+}
+```
+
+#### Update Task
+
+**PUT** `/api/v1/tasks/{task_id}`
+
+Updates task information. Only assignee or admin.
+
+**Authentication:** Required
+
+**Request Body:**
+
+```json
+{
+  "title": "Design homepage mockup v2",
+  "status": "in_progress"
+}
+```
+
+**Response (200):** Updated task object
+
+#### Delete Task
+
+**DELETE** `/api/v1/tasks/{task_id}`
+
+Deletes a task. Only assignee or admin.
+
+**Authentication:** Required
+
+**Response (204):** No content
+
+#### Move Task
+
+**PATCH** `/api/v1/tasks/{task_id}/move`
+
+Moves a task to a new status (Kanban drag-and-drop). Only assignee or admin.
+
+**Authentication:** Required
+
+**Request Body:**
+
+```json
+{
+  "new_status": "in_progress"
+}
+```
+
+**Response (200):** Updated task object
 
 ### Reports
 
-- `GET /api/v1/reports/project/{id}` - Project progress report
-- `GET /api/v1/reports/team-performance` - Team performance (Admin)
-- `GET /api/v1/reports/workload` - Workload distribution (Admin)
+#### Get Project Progress Report
+
+**GET** `/api/v1/reports/project/{project_id}`
+
+Retrieves detailed project progress report.
+
+**Authentication:** Required
+
+**Response (200):**
+
+```json
+{
+  "project_id": "550e8400-e29b-41d4-a716-446655440001",
+  "project_name": "Website Redesign",
+  "total_tasks": 10,
+  "completed_tasks": 3,
+  "in_progress_tasks": 4,
+  "todo_tasks": 3,
+  "progress_percentage": 30.0
+}
+```
+
+#### Get Team Performance Report
+
+**GET** `/api/v1/reports/team-performance`
+
+Retrieves team performance metrics. Admin only.
+
+**Authentication:** Required (Admin)
+
+**Response (200):**
+
+```json
+[
+  {
+    "user_id": "550e8400-e29b-41d4-a716-446655440000",
+    "user_name": "John Doe",
+    "total_tasks": 15,
+    "completed_tasks": 12,
+    "in_progress_tasks": 2,
+    "todo_tasks": 1,
+    "completion_rate": 80.0
+  }
+]
+```
+
+#### Get Workload Distribution Report
+
+**GET** `/api/v1/reports/workload`
+
+Retrieves workload distribution by user. Admin only.
+
+**Authentication:** Required (Admin)
+
+**Response (200):**
+
+```json
+[
+  {
+    "user_id": "550e8400-e29b-41d4-a716-446655440000",
+    "user_name": "John Doe",
+    "assigned_tasks": 8,
+    "high_priority_tasks": 3,
+    "medium_priority_tasks": 4,
+    "low_priority_tasks": 1
+  }
+]
+```
+
+### Dashboard
+
+#### Get Dashboard Data
+
+**GET** `/api/v1/dashboard/`
+
+Retrieves personalized dashboard data for the current user.
+
+**Authentication:** Required
+
+**Response (200):**
+
+```json
+{
+  "recent_tasks": [...],
+  "project_progress": [...],
+  "notifications": [...]
+}
+```
+
+---
+
+## 🧪 API Testing
+
+### cURL Examples
+
+#### Register a new user:
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/auth/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test User",
+    "email": "test@example.com",
+    "password": "password123"
+  }'
+```
+
+#### Login and get token:
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "password": "password123"
+  }'
+```
+
+#### Get current user (replace TOKEN with actual token):
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/users/me" \
+  -H "Authorization: Bearer TOKEN"
+```
+
+#### Create a project (Admin only):
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/projects/" \
+  -H "Authorization: Bearer TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "New Project",
+    "description": "Project description"
+  }'
+```
+
+### Postman Collection
+
+Import the OpenAPI schema from `http://localhost:8000/openapi.json` into Postman for automatic collection generation.
+
+### WebSocket Testing
+
+Connect to real-time notifications:
+
+```javascript
+const ws = new WebSocket("ws://localhost:8000/ws/notifications/YOUR_USER_ID");
+
+ws.onopen = () => console.log("Connected to WebSocket");
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log("Notification:", data);
+};
+ws.onclose = () => console.log("WebSocket connection closed");
+```
+
+WebSocket events include:
+
+- `task_created`, `task_updated`, `task_deleted`, `task_moved`
+- `project_created`, `project_updated`, `project_deleted`
+
+### Integration Testing
+
+Run the test suite:
+
+```bash
+pytest tests/ -v
+```
+
+Test with coverage:
+
+```bash
+pytest --cov=app --cov-report=html
+```
 
 ---
 

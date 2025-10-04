@@ -32,7 +32,7 @@ export const useAuthStore = create(
             error: null,
           });
           toast("Logged in successfully", { type: "success" });
-          return response;
+          return true;
         } catch (error) {
           // Catch the response if available (e.g., from Axios error)
           const errorMessage =
@@ -44,7 +44,7 @@ export const useAuthStore = create(
             error: errorMessage,
             isLoading: false,
           });
-          return null; // Or throw error if preferred
+          return false; // Or throw error if preferred
         }
       },
       register: async (userData) => {
@@ -60,7 +60,7 @@ export const useAuthStore = create(
             error: null,
           });
           toast("Registered successfully", { type: "success" });
-          return response;
+          return true;
         } catch (error) {
           const errorMessage =
             error.response?.data?.detail ||
@@ -71,6 +71,7 @@ export const useAuthStore = create(
             error: errorMessage,
             isLoading: false,
           });
+          return false;
         }
       },
       refreshToken: async () => {

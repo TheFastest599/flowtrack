@@ -49,13 +49,13 @@ export default function SignupPage() {
       return;
     }
     try {
-      await register({
+      const res = await register({
         name: formData.name,
         email: formData.email,
         password: formData.password,
       });
       // Redirect on success
-      router.push("/");
+      if (res) router.push("/");
     } catch (err) {
       // Error is handled in the store
     }

@@ -29,11 +29,12 @@ async def list_users(
     skip: int = 0,
     limit: int = 100,
     search: Optional[str] = None,
+    role: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_admin_user)
 ):
     """List all users (Admin only)."""
-    users = await UserService.get_users(db, skip=skip, limit=limit, search=search)
+    users = await UserService.get_users(db, skip=skip, limit=limit, search=search, role=role)
     return users
 
 

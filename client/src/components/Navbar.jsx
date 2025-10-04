@@ -72,6 +72,13 @@ export default function Navbar() {
                   </NavigationMenuLink>
                 </NavigationMenuItem>
               ))}
+              {isAdmin && (
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild>
+                    <Link href="/members">Members</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              )}
               {/* Auth Buttons */}
               {!hydrated ? (
                 <NavigationMenuItem>
@@ -161,6 +168,15 @@ export default function Navbar() {
                     {link.name}
                   </Link>
                 ))}
+                {isAdmin && (
+                  <Link
+                    key="Members"
+                    href="/members"
+                    onClick={() => setOpen(false)}
+                  >
+                    Members
+                  </Link>
+                )}
                 {/* Auth Buttons */}
                 {!hydrated ? (
                   <div className="flex gap-2">

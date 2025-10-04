@@ -182,7 +182,23 @@ export default function TasksPage() {
                     "Unknown"}
                 </Link>
               </TableCell>
-              <TableCell>{task.assigned_to_name || "Unassigned"}</TableCell>
+              <TableCell>
+                {task.assigned_to_name &&
+                task.assigned_to_name !== "Unassigned" ? (
+                  isAdmin ? (
+                    <Link
+                      href={`/members/${task.assigned_to}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {task.assigned_to_name}
+                    </Link>
+                  ) : (
+                    task.assigned_to_name
+                  )
+                ) : (
+                  "Unassigned"
+                )}
+              </TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" asChild>
