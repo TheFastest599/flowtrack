@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, User, Mail, Shield } from "lucide-react";
 import { me } from "@/lib/api/user";
 
-function Page() {
+export default function ProfilePage() {
   // Fetch current user data
   const {
     data: user,
@@ -73,13 +73,5 @@ function Page() {
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-export default function ProfilePage() {
-  return (
-    <ProtectedRoute>
-      <Page />
-    </ProtectedRoute>
   );
 }

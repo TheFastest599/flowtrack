@@ -12,7 +12,7 @@ export const useAuthStore = create(
       token: null,
       loggedIn: false,
       isLoading: false,
-      isAdmin: (user) => user?.role === "admin",
+      isAdmin: (user = get().user) => user?.role === "admin",
       error: null,
       hydrated: false,
       setUser: (user) => set({ user }),

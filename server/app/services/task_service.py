@@ -31,7 +31,7 @@ class TaskService:
         
         # Filter for non-admin users: only tasks assigned to them
         if current_user['role'] != "admin":
-            query = query.where(Task.assigned_to == current_user.id)
+            query = query.where(Task.assigned_to == current_user['id'])
         
         query = query.offset(skip).limit(limit)
         result = await db.execute(query)
@@ -44,7 +44,7 @@ class TaskService:
         
         # Filter for non-admin users
         if current_user['role'] != "admin":
-            query = query.where(Task.assigned_to == current_user.id)
+            query = query.where(Task.assigned_to == current_user['id'])
         
         result = await db.execute(query)
         task = result.scalar_one_or_none()
@@ -91,7 +91,7 @@ class TaskService:
         
         query = select(Task).where(Task.id == task_id)
         if current_user['role'] != "admin":
-            query = query.where(Task.assigned_to == current_user.id)
+            query = query.where(Task.assigned_to == current_user['id'])
         
         result = await db.execute(query)
         task = result.scalar_one_or_none()
@@ -120,7 +120,7 @@ class TaskService:
     async def delete_task(db: AsyncSession, task_id: UUID, current_user: User) -> bool:
         query = select(Task).where(Task.id == task_id)
         if current_user['role'] != "admin":
-            query = query.where(Task.assigned_to == current_user.id)
+            query = query.where(Task.assigned_to == current_user['id'])
         
         result = await db.execute(query)
         task = result.scalar_one_or_none()
@@ -135,7 +135,7 @@ class TaskService:
     async def move_task(db: AsyncSession, task_id: UUID, new_status: str, current_user: User) -> Optional[TaskResponse]:
         query = select(Task).where(Task.id == task_id)
         if current_user['role'] != "admin":
-            query = query.where(Task.assigned_to == current_user.id)
+            query = query.where(Task.assigned_to == current_user['id'])
         
         result = await db.execute(query)
         task = result.scalar_one_or_none()

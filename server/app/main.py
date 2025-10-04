@@ -2,7 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from app.api.v1 import auth, users, projects, tasks, reports
+from app.api.v1 import router
 from app.database import init_db, close_db
 from app.core.config import settings
 from app.core.redis import redis_client
@@ -45,11 +45,8 @@ app.add_middleware(
 )
 
 # Include API routers
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
-app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
-app.include_router(projects.router, prefix="/api/v1/projects", tags=["Projects"])
-app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["Tasks"])
-app.include_router(reports.router, prefix="/api/v1/reports", tags=["Reports"])
+
+app.include_router(router, prefix="/api/v1")
 
 
 # WebSocket endpoint for real-time notifications

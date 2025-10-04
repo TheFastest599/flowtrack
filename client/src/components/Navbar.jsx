@@ -38,7 +38,6 @@ const navLinks = [
   { name: "Projects", href: "/projects" },
   { name: "Tasks", href: "/tasks" },
   { name: "Reports", href: "/reports" },
-  { name: "About", href: "/about" },
 ];
 
 export default function Navbar() {
