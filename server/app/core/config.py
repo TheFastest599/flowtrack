@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 
 
@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # CORS
-    ALLOW_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]
+    ALLOW_ORIGINS: List[str] = ["http://localhost:3023", "http://localhost:3021"]
     
     # App Settings
     DEBUG: bool = True
@@ -30,3 +30,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
