@@ -13,7 +13,7 @@ from app.dependencies import get_current_user, get_admin_user
 router = APIRouter()
 
 
-@router.post("/", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_project(
     project_data: ProjectCreate,
     db: AsyncSession = Depends(get_db),

@@ -103,34 +103,35 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <button
+              <Link
+                href="/projects/new"
                 className="flex flex-col items-center p-4 border rounded hover:bg-gray-50"
-                onClick={() => router.push("/projects/new")}
               >
                 <Plus className="h-8 w-8 text-blue-600 mb-2" />
                 <span className="text-sm font-medium">New Project</span>
-              </button>
-              <button
+              </Link>
+              <Link
+                href="/tasks/new"
                 className="flex flex-col items-center p-4 border rounded hover:bg-gray-50"
-                onClick={() => router.push("/projects/new")}
               >
                 <CheckCircle className="h-8 w-8 text-green-600 mb-2" />
                 <span className="text-sm font-medium">Add Task</span>
-              </button>
-              <button
+              </Link>
+              <Link
+                href="/reports"
                 className="flex flex-col items-center p-4 border rounded hover:bg-gray-50"
                 onClick={() => router.push("/reports")}
               >
                 <BarChart3 className="h-8 w-8 text-purple-600 mb-2" />
                 <span className="text-sm font-medium">View Reports</span>
-              </button>
-              <button
+              </Link>
+              <Link
+                href="/members"
                 className="flex flex-col items-center p-4 border rounded hover:bg-gray-50"
-                onClick={() => router.push("/profile")}
               >
                 <Users className="h-8 w-8 text-orange-600 mb-2" />
                 <span className="text-sm font-medium">Manage Team</span>
-              </button>
+              </Link>
             </div>
           </CardContent>
         </Card>
@@ -276,7 +277,12 @@ export default function DashboardPage() {
                   className="flex justify-between items-center p-4 border rounded"
                 >
                   <div>
-                    <Link href={`/tasks/${task.id}`} className="font-medium hover:underline">{task.title}</Link>
+                    <Link
+                      href={`/tasks/${task.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {task.title}
+                    </Link>
                     <p className="text-sm text-muted-foreground">
                       {task.description}
                     </p>

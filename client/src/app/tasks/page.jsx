@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Plus, Edit, Trash, Eye } from "lucide-react";
+import { Loader2, Plus, Edit, Trash, Eye, SquareKanban } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { tasksApi } from "@/lib/api/tasks";
 import { projectsApi } from "@/lib/api/projects";
@@ -204,6 +204,11 @@ export default function TasksPage() {
                   <Button variant="outline" size="sm" asChild>
                     <Link href={`/tasks/${task.id}`}>
                       <Eye className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/projects/${task.project_id}/kanban`}>
+                      <SquareKanban className="h-4 w-4" />
                     </Link>
                   </Button>
                   {isAdmin && (

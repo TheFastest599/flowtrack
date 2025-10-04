@@ -40,7 +40,10 @@ export default function CreateProjectPage() {
       toast.success("Project created");
       router.push("/projects");
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) => {
+      toast.error(error.message);
+      queryClient.invalidateQueries(["projects"]);
+    },
   });
 
   const onSubmit = (data) => mutation.mutate(data);

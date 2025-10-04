@@ -28,7 +28,7 @@ export default function RootLayout({ children }) {
         <RefreshTokenWrapper />
         <Navbar />
         <QueryProvider>
-          <main className="max-w-7xl my-4 mx-4 sm:mx-6 xl:mx-auto min-h-screen">
+          <main className="max-w-7xl mt-4 mx-4 sm:mx-6 xl:mx-auto min-h-screen">
             <AutoBreadcrumb />
             {children}
           </main>

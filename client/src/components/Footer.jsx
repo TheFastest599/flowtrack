@@ -49,7 +49,13 @@ export default function Footer() {
           {/* Contact */}
           <div>
             <h4 className="text-lg font-semibold mb-4">Contact</h4>
-            <p className="text-gray-400">Email: support@flowtrack.com</p>
+            <a
+              href="mailto:ribhusaha2003@gmail.com"
+              target="_blank"
+              className="text-gray-400"
+            >
+              Email: ribhusaha2003@gmail.com
+            </a>
             <p className="text-gray-400">
               © 2025 FlowTrack. All rights reserved.
             </p>

@@ -112,7 +112,9 @@ export default function Home() {
             their projects efficiently.
           </p>
           <Button asChild size="lg" variant="secondary" className="px-8">
-            <Link href="/register">Start Your Free Trial</Link>
+            <Link href={loggedIn ? "/dashboard" : "/signup"}>
+              Start Your Free Trial
+            </Link>
           </Button>
         </div>
       </section>

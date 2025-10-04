@@ -49,7 +49,7 @@ class ProjectService:
         ]
 
     @staticmethod
-    async def get_project(db: AsyncSession, project_id: UUID, current_user: dict) -> Optional[ProjectResponse]:
+    async def get_project(db: AsyncSession, project_id: UUID, current_user: User) -> Optional[ProjectResponse]:
         query = select(Project).options(joinedload(Project.creator)).where(Project.id == project_id)
         
         # Filter for non-admin users
@@ -73,7 +73,7 @@ class ProjectService:
         )
 
     @staticmethod
-    async def get_project_progress(db: AsyncSession, project_id: UUID, current_user: dict) -> Optional[dict]:
+    async def get_project_progress(db: AsyncSession, project_id: UUID, current_user: User) -> Optional[dict]:
         # First check access
         project = await ProjectService.get_project(db, project_id, current_user)
         if not project:
@@ -111,7 +111,7 @@ class ProjectService:
         }
 
     @staticmethod
-    async def create_project(db: AsyncSession, project_data: ProjectCreate, current_user: dict) -> ProjectResponse:
+    async def create_project(db: AsyncSession, project_data: ProjectCreate, current_user: User) -> dict:
         if current_user['role'] != "admin":
             raise HTTPException(status_code=403, detail="Only admins can create projects")
         
@@ -119,20 +119,10 @@ class ProjectService:
         db.add(project)
         await db.commit()
         await db.refresh(project)
-        return ProjectResponse(
-            id=project.id,
-            name=project.name,
-            description=project.description,
-            deadline=project.deadline,
-            status=project.status,
-            created_by=project.created_by,
-            creator_name=current_user['name'],
-            created_at=project.created_at,
-            updated_at=project.updated_at
-        )
+        return {'message' : "Project Created"}
 
     @staticmethod
-    async def update_project(db: AsyncSession, project_id: UUID, project_data: ProjectUpdate, current_user: dict) -> Optional[ProjectResponse]:
+    async def update_project(db: AsyncSession, project_id: UUID, project_data: ProjectUpdate, current_user: User) -> Optional[ProjectResponse]:
         from app.models.project import Project
         
         # Allow if admin or member of the project
@@ -168,7 +158,7 @@ class ProjectService:
         )
 
     @staticmethod
-    async def delete_project(db: AsyncSession, project_id: UUID, current_user: dict) -> bool:
+    async def delete_project(db: AsyncSession, project_id: UUID, current_user: User) -> bool:
         if current_user['role'] != "admin":
             raise HTTPException(status_code=403, detail="Only admins can delete projects")
         
@@ -183,7 +173,7 @@ class ProjectService:
         return True
 
     @staticmethod
-    async def add_member_to_project(db: AsyncSession, project_id: UUID, user_id: UUID, current_user: dict) -> bool:
+    async def add_member_to_project(db: AsyncSession, project_id: UUID, user_id: UUID, current_user: User) -> bool:
         if current_user['role'] != "admin":
             raise HTTPException(status_code=403, detail="Only admins can assign members to projects")
         
@@ -203,7 +193,7 @@ class ProjectService:
         return True
 
     @staticmethod
-    async def remove_member_from_project(db: AsyncSession, project_id: UUID, user_id: UUID, current_user: dict) -> bool:
+    async def remove_member_from_project(db: AsyncSession, project_id: UUID, user_id: UUID, current_user: User) -> bool:
         if current_user['role'] != "admin":
             raise HTTPException(status_code=403, detail="Only admins can remove members from projects")
         
@@ -223,7 +213,7 @@ class ProjectService:
         return True
 
     @staticmethod
-    async def get_project_members(db: AsyncSession, project_id: UUID, current_user: dict, search: Optional[str] = None) -> List[dict]:
+    async def get_project_members(db: AsyncSession, project_id: UUID, current_user: User, search: Optional[str] = None) -> List[dict]:
         # Allow if admin or member of the project
         if current_user['role'] != "admin":
             member_query = select(Project).where(Project.id == project_id).where(Project.members.any(User.id == current_user['id']))
