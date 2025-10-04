@@ -18,7 +18,6 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 import { tasksApi } from "@/lib/api/tasks";
 import { projectsApi } from "@/lib/api/projects";
-import { getUsers } from "@/lib/api/user";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -40,13 +39,6 @@ export default function TaskDetailPage() {
     queryKey: ["project", task?.project_id],
     queryFn: () => projectsApi.getProject(task.project_id),
     enabled: !!task,
-  });
-
-  const { data: assignee } = useQuery({
-    queryKey: ["user", task?.assigned_to],
-    queryFn: () =>
-      getUsers().then((users) => users.find((u) => u.id === task.assigned_to)),
-    enabled: !!task?.assigned_to,
   });
 
   if (taskLoading)
@@ -118,7 +110,7 @@ export default function TaskDetailPage() {
             <div>
               <p className="text-sm font-medium text-gray-500">Assigned To</p>
               <p className="text-lg font-semibold">
-                {assignee?.name || "Unassigned"}
+                {task.assigned_to_name || "Unassigned"}
               </p>
             </div>
             <div>

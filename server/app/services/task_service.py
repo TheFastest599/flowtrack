@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from uuid import UUID
 from typing import List, Optional
 
@@ -19,7 +20,7 @@ class TaskService:
         priority: Optional[str] = None,
         assigned_to: Optional[UUID] = None
     ) -> List[TaskResponse]:
-        query = select(Task)
+        query = select(Task).options(selectinload(Task.assignee))
         if project_id:
             query = query.where(Task.project_id == project_id)
         if status:
@@ -36,11 +37,16 @@ class TaskService:
         query = query.offset(skip).limit(limit)
         result = await db.execute(query)
         tasks = result.scalars().all()
-        return [TaskResponse.from_orm(t) for t in tasks]
+        responses = []
+        for t in tasks:
+            response = TaskResponse.from_orm(t)
+            response.assigned_to_name = t.assignee.name if t.assignee else None
+            responses.append(response)
+        return responses
 
     @staticmethod
     async def get_task(db: AsyncSession, task_id: UUID, current_user: User) -> Optional[TaskResponse]:
-        query = select(Task).where(Task.id == task_id)
+        query = select(Task).options(selectinload(Task.assignee)).where(Task.id == task_id)
         
         # Filter for non-admin users
         if current_user['role'] != "admin":
@@ -48,7 +54,11 @@ class TaskService:
         
         result = await db.execute(query)
         task = result.scalar_one_or_none()
-        return TaskResponse.from_orm(task) if task else None
+        if task:
+            response = TaskResponse.from_orm(task)
+            response.assigned_to_name = task.assignee.name if task.assignee else None
+            return response
+        return None
 
     @staticmethod
     async def create_task(db: AsyncSession, task_data: TaskCreate, current_user: dict) -> TaskResponse:

@@ -24,7 +24,6 @@ import { Loader2, Plus, Edit, Trash, Eye } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { tasksApi } from "@/lib/api/tasks";
 import { projectsApi } from "@/lib/api/projects";
-import { getUsers } from "@/lib/api/user";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -51,11 +50,6 @@ export default function TasksPage() {
   const { data: projects } = useQuery({
     queryKey: ["projects"],
     queryFn: () => projectsApi.getProjects({ limit: 100 }),
-  });
-
-  const { data: users } = useQuery({
-    queryKey: ["users"],
-    queryFn: () => getUsers(),
   });
 
   const deleteMutation = useMutation({
@@ -188,10 +182,7 @@ export default function TasksPage() {
                     "Unknown"}
                 </Link>
               </TableCell>
-              <TableCell>
-                {users?.find((u) => u.id === task.assigned_to)?.name ||
-                  "Unassigned"}
-              </TableCell>
+              <TableCell>{task.assigned_to_name || "Unassigned"}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" asChild>

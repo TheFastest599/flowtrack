@@ -10,7 +10,6 @@ import { Loader2, Plus, ArrowLeft } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { tasksApi } from "@/lib/api/tasks";
 import { projectsApi } from "@/lib/api/projects";
-import { getUsers } from "@/lib/api/user";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -48,11 +47,6 @@ export default function ProjectKanbanPage() {
     queryFn: () => tasksApi.getTasks({ project_id: projectId, limit: 100 }),
   });
 
-  const { data: users } = useQuery({
-    queryKey: ["users"],
-    queryFn: () => getUsers(),
-  });
-
   const [tasks, setTasks] = useState([]);
   const [draggedTaskInitialColumn, setDraggedTaskInitialColumn] =
     useState(null);
@@ -67,11 +61,11 @@ export default function ProjectKanbanPage() {
         deadline: task.deadline,
         column: task.status,
         assigned_to: task.assigned_to,
-        owner: users?.find((u) => u.id === task.assigned_to),
+        assigned_to_name: task.assigned_to_name,
       }));
       setTasks(formattedTasks);
     }
-  }, [tasksData, users]);
+  }, [tasksData]);
 
   const updateTaskMutation = useMutation({
     mutationFn: ({ taskId, status }) => tasksApi.moveTask(taskId, status),
@@ -190,17 +184,16 @@ export default function ProjectKanbanPage() {
                 >
                   <div className="flex flex-col gap-2">
                     <div className="flex items-start justify-between gap-2">
-                      <Link
-                        href={`/tasks/${task.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex-1 font-medium text-sm hover:underline"
+                      <span
+                        onClick={() => router.push(`/tasks/${task.id}`)}
+                        className="flex-1 font-medium text-sm hover:underline cursor-pointer"
                       >
                         {task.name}
-                      </Link>
-                      {task.owner && (
+                      </span>
+                      {task.assigned_to_name && (
                         <Avatar className="h-6 w-6 shrink-0">
                           <AvatarFallback className="text-xs">
-                            {task.owner.name?.slice(0, 2).toUpperCase()}
+                            {task.assigned_to_name.slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                       )}

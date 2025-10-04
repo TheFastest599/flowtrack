@@ -16,6 +16,7 @@ class TaskRead(TaskBase):  # Add this
     id: UUID
     project_id: UUID
     assigned_to: Optional[UUID] = None
+    assigned_to_name: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -42,6 +43,7 @@ class TaskResponse(TaskBase):
     id: UUID
     project_id: UUID
     assigned_to: Optional[UUID] = None
+    assigned_to_name: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
