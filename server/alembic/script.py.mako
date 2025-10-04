@@ -1,1 +1,0 @@
-# This file is a template used by Alembic to generate migration scripts.

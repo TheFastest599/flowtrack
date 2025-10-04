@@ -28,7 +28,7 @@ const useNotificationStore = create(
         if (get().isConnected) return; // Already connected
 
         const wsUrl = `${
-          process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000"
+          process.env.NEXT_PUBLIC_WS_URL || ""
         }/ws/notifications?user_id=${userId}`;
         const ws = new WebSocket(wsUrl);
 
