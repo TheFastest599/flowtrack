@@ -17,7 +17,7 @@ async def register(user_data: UserCreate,response : Response, db: AsyncSession =
         value=result["refresh_token"],  # Wait, no—store the token before popping
         httponly=True,
         secure=settings.MODE == "production",
-        samesite="strict",
+        samesite="none",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
     )
     result.pop("refresh_token")
@@ -33,7 +33,7 @@ async def login(credentials: UserLogin, response : Response, db: AsyncSession = 
         value=result["refresh_token"],  # Wait, no—store the token before popping
         httponly=True,
         secure=settings.MODE == "production",
-        samesite="strict",
+        samesite="none",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
     )
     result.pop("refresh_token")
@@ -56,5 +56,10 @@ async def refresh_token( request : Request,response : Response, db: AsyncSession
 async def logout():
     """Logout user by clearing the refresh token cookie."""
     response = Response(status_code=status.HTTP_204_NO_CONTENT)
-    response.delete_cookie(key="refresh_token")
+    response.delete_cookie(
+    key="refresh_token",
+    httponly=True,
+    secure=settings.MODE == "production",
+    samesite="none"
+    )
     return response
